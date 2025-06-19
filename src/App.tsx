@@ -136,7 +136,10 @@ function AppContent() {
   switch (currentView) {
     case 'profile':
       return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div 
+          className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
+        >
           <Navbar 
             darkMode={darkMode} 
             onToggleDarkMode={toggleDarkMode}
@@ -151,7 +154,10 @@ function AppContent() {
       );
     case 'subjects':
       return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div 
+          className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
+        >
           <Navbar 
             darkMode={darkMode} 
             onToggleDarkMode={toggleDarkMode}
@@ -179,7 +185,10 @@ function AppContent() {
       );
     case 'analytics':
       return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div 
+          className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
+        >
           <Navbar 
             darkMode={darkMode} 
             onToggleDarkMode={toggleDarkMode}
@@ -203,7 +212,10 @@ function AppContent() {
       );
     case 'chat':
       return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div 
+          className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
+        >
           <Navbar 
             darkMode={darkMode} 
             onToggleDarkMode={toggleDarkMode}
@@ -220,7 +232,10 @@ function AppContent() {
       );
     case 'quiz':
       return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div 
+          className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
+        >
           <Navbar 
             darkMode={darkMode} 
             onToggleDarkMode={toggleDarkMode}
@@ -237,7 +252,10 @@ function AppContent() {
       );
     default:
       return (
-        <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <div 
+          className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
+        >
           <Navbar 
             darkMode={darkMode} 
             onToggleDarkMode={toggleDarkMode}
