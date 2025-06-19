@@ -61,6 +61,20 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return topics[Math.min(completedTopics, topics.length - 1)] || 'Advanced Topics';
   };
 
+  // Function to get subject-specific header images
+  const getSubjectHeaderImage = (subjectName: string): string => {
+    const imageMap: Record<string, string> = {
+      'Mathematics': 'https://images.pexels.com/photos/6256/mathematics-blackboard-education-classroom.jpg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Physics': 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Chemistry': 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Biology': 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'History': 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Literature': 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2'
+    };
+    
+    return imageMap[subjectName] || 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2';
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -147,82 +161,94 @@ export const Dashboard: React.FC<DashboardProps> = ({
                     <div
                       key={subject.id}
                       onClick={() => handleSubjectClick(subject)}
-                      className={`group cursor-pointer border rounded-xl p-6 hover:border-blue-400 hover:shadow-lg transition-all duration-200 ${
+                      className={`group cursor-pointer border rounded-xl overflow-hidden hover:border-blue-400 hover:shadow-lg transition-all duration-200 ${
                         darkMode 
                           ? 'bg-gray-800 border-gray-700 hover:bg-gray-750' 
                           : 'bg-white border-gray-200'
                       }`}
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${subject.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                          <span className="text-white font-bold text-lg">{subject.name.charAt(0)}</span>
-                        </div>
-                      </div>
-                      
-                      <h3 className={`text-lg font-semibold mb-2 group-hover:text-blue-600 transition-colors ${
-                        darkMode ? 'text-white' : 'text-gray-900'
-                      }`}>
-                        {subject.name}
-                      </h3>
-                      <p className={`text-sm mb-4 transition-colors duration-300 ${
-                        darkMode ? 'text-gray-400' : 'text-gray-600'
-                      }`}>{subject.description}</p>
-                      
-                      <div className="space-y-2 mb-4">
-                        <div className="flex justify-between text-sm">
-                          <span className={`transition-colors duration-300 ${
-                            darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                            {subject.completedTopics}/{subject.totalTopics} topics: {currentTopicName}
-                          </span>
-                          <span className={`font-medium transition-colors duration-300 ${
-                            darkMode ? 'text-white' : 'text-gray-900'
-                          }`}>{Math.round(progress)}%</span>
-                        </div>
-                        <div className={`w-full rounded-full h-2 ${
-                          darkMode ? 'bg-gray-700' : 'bg-gray-200'
-                        }`}>
-                          <div
-                            className={`h-2 rounded-full bg-gradient-to-r ${subject.color} transition-all duration-500`}
-                            style={{ width: `${progress}%` }}
-                          />
+                      {/* Header Image */}
+                      <div className="relative h-32 overflow-hidden">
+                        <img
+                          src={getSubjectHeaderImage(subject.name)}
+                          alt={subject.name}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                        <div className="absolute top-3 right-3">
+                          <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${subject.color} flex items-center justify-center shadow-lg`}>
+                            <span className="text-white font-bold text-lg">{subject.name.charAt(0)}</span>
+                          </div>
                         </div>
                       </div>
 
-                      {/* Action Buttons */}
-                      <div className="flex items-center justify-between pt-4 border-t border-opacity-20 border-gray-300">
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={(e) => handleBookmarkClick(e, subject.id)}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              isBookmarked
-                                ? 'text-blue-600 hover:text-blue-700'
-                                : darkMode
-                                ? 'text-gray-400 hover:text-gray-300'
-                                : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                          >
-                            {isBookmarked ? (
-                              <BookmarkCheck className="w-4 h-4" />
-                            ) : (
-                              <Bookmark className="w-4 h-4" />
-                            )}
-                          </button>
-                          <div className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            subject.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
-                            subject.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
+                      {/* Card Content */}
+                      <div className="p-6">
+                        <h3 className={`text-lg font-semibold mb-2 group-hover:text-blue-600 transition-colors ${
+                          darkMode ? 'text-white' : 'text-gray-900'
+                        }`}>
+                          {subject.name}
+                        </h3>
+                        <p className={`text-sm mb-4 transition-colors duration-300 ${
+                          darkMode ? 'text-gray-400' : 'text-gray-600'
+                        }`}>{subject.description}</p>
+                        
+                        <div className="space-y-2 mb-4">
+                          <div className="flex justify-between text-sm">
+                            <span className={`transition-colors duration-300 ${
+                              darkMode ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
+                              {subject.completedTopics}/{subject.totalTopics} topics: {currentTopicName}
+                            </span>
+                            <span className={`font-medium transition-colors duration-300 ${
+                              darkMode ? 'text-white' : 'text-gray-900'
+                            }`}>{Math.round(progress)}%</span>
+                          </div>
+                          <div className={`w-full rounded-full h-2 ${
+                            darkMode ? 'bg-gray-700' : 'bg-gray-200'
                           }`}>
-                            {subject.difficulty}
+                            <div
+                              className={`h-2 rounded-full bg-gradient-to-r ${subject.color} transition-all duration-500`}
+                              style={{ width: `${progress}%` }}
+                            />
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <span className={`text-sm transition-colors duration-300 ${
-                            darkMode ? 'text-gray-400' : 'text-gray-600'
-                          }`}>Continue</span>
-                          <ArrowRight className={`w-4 h-4 group-hover:text-blue-600 transition-colors ${
-                            darkMode ? 'text-gray-400' : 'text-gray-400'
-                          }`} />
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-between pt-4 border-t border-opacity-20 border-gray-300">
+                          <div className="flex items-center space-x-2">
+                            <button
+                              onClick={(e) => handleBookmarkClick(e, subject.id)}
+                              className={`p-1.5 rounded-lg transition-colors ${
+                                isBookmarked
+                                  ? 'text-blue-600 hover:text-blue-700'
+                                  : darkMode
+                                  ? 'text-gray-400 hover:text-gray-300'
+                                  : 'text-gray-400 hover:text-gray-600'
+                              }`}
+                            >
+                              {isBookmarked ? (
+                                <BookmarkCheck className="w-4 h-4" />
+                              ) : (
+                                <Bookmark className="w-4 h-4" />
+                              )}
+                            </button>
+                            <div className={`px-2 py-1 text-xs font-medium rounded-full ${
+                              subject.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
+                              subject.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-red-100 text-red-800'
+                            }`}>
+                              {subject.difficulty}
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <span className={`text-sm transition-colors duration-300 ${
+                              darkMode ? 'text-gray-400' : 'text-gray-600'
+                            }`}>Continue</span>
+                            <ArrowRight className={`w-4 h-4 group-hover:text-blue-600 transition-colors ${
+                              darkMode ? 'text-gray-400' : 'text-gray-400'
+                            }`} />
+                          </div>
                         </div>
                       </div>
                     </div>
