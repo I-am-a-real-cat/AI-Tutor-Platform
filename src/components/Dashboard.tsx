@@ -157,31 +157,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${subject.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
                           <span className="text-white font-bold text-lg">{subject.name.charAt(0)}</span>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <button
-                            onClick={(e) => handleBookmarkClick(e, subject.id)}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              isBookmarked
-                                ? 'text-blue-600 hover:text-blue-700'
-                                : darkMode
-                                ? 'text-gray-400 hover:text-gray-300'
-                                : 'text-gray-400 hover:text-gray-600'
-                            }`}
-                          >
-                            {isBookmarked ? (
-                              <BookmarkCheck className="w-4 h-4" />
-                            ) : (
-                              <Bookmark className="w-4 h-4" />
-                            )}
-                          </button>
-                          <div className={`px-2 py-1 text-xs font-medium rounded-full ${
-                            subject.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
-                            subject.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                            'bg-red-100 text-red-800'
-                          }`}>
-                            {subject.difficulty}
-                          </div>
-                        </div>
                       </div>
                       
                       <h3 className={`text-lg font-semibold mb-2 group-hover:text-blue-600 transition-colors ${
@@ -215,7 +190,32 @@ export const Dashboard: React.FC<DashboardProps> = ({
                       </div>
 
                       {/* Action Buttons */}
-                      <div className="flex items-center justify-end pt-4 border-t border-opacity-20 border-gray-300">
+                      <div className="flex items-center justify-between pt-4 border-t border-opacity-20 border-gray-300">
+                        <div className="flex items-center space-x-2">
+                          <button
+                            onClick={(e) => handleBookmarkClick(e, subject.id)}
+                            className={`p-1.5 rounded-lg transition-colors ${
+                              isBookmarked
+                                ? 'text-blue-600 hover:text-blue-700'
+                                : darkMode
+                                ? 'text-gray-400 hover:text-gray-300'
+                                : 'text-gray-400 hover:text-gray-600'
+                            }`}
+                          >
+                            {isBookmarked ? (
+                              <BookmarkCheck className="w-4 h-4" />
+                            ) : (
+                              <Bookmark className="w-4 h-4" />
+                            )}
+                          </button>
+                          <div className={`px-2 py-1 text-xs font-medium rounded-full ${
+                            subject.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
+                            subject.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {subject.difficulty}
+                          </div>
+                        </div>
                         <div className="flex items-center space-x-2">
                           <span className={`text-sm transition-colors duration-300 ${
                             darkMode ? 'text-gray-400' : 'text-gray-600'
