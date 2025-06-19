@@ -90,7 +90,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
     }
 
     const imageMap: Record<string, string> = {
-      'Mathematics': 'https://images.pexels.com/photos/3729557/pexels-photo-3729557.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Mathematics': 'https://images.pexels.com/photos/6256/mathematics-blackboard-education-classroom.jpg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
       'Physics': 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
       'Chemistry': 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
       'Biology': 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
@@ -105,8 +105,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const getImageOptions = (subjectName: string) => {
     const imageOptions: Record<string, { url: string; title: string }[]> = {
       'Mathematics': [
-        { url: 'https://images.pexels.com/photos/3729557/pexels-photo-3729557.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Mathematical Formulas' },
         { url: 'https://images.pexels.com/photos/6256/mathematics-blackboard-education-classroom.jpg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Blackboard with Equations' },
+        { url: 'https://images.pexels.com/photos/3729557/pexels-photo-3729557.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Mathematical Formulas' },
         { url: 'https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Calculator and Notes' },
         { url: 'https://images.pexels.com/photos/3729557/pexels-photo-3729557.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Geometric Shapes' }
       ],
@@ -146,10 +146,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
   };
 
   return (
-    <div 
-      className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-      style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
-    >
+    <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Hero Section */}
         <div className="text-center mb-12">
