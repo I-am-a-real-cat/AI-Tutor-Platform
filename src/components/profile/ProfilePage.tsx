@@ -33,8 +33,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Left Sidebar - Profile Card */}
         <div className="lg:col-span-1">
-          <div className={`rounded-3xl p-8 shadow-sm transition-colors duration-300 ${
-            darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+          <div className={`rounded-3xl p-8 shadow-sm border-2 border-blue-200 transition-colors duration-300 ${
+            darkMode ? 'bg-gray-800 border-blue-400' : 'bg-white border-blue-200'
           }`}>
             {/* Profile Picture */}
             <div className="text-center mb-8">
@@ -77,8 +77,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
 
         {/* Main Content - Profile Information */}
         <div className="lg:col-span-3">
-          <div className={`rounded-3xl p-8 shadow-sm transition-colors duration-300 ${
-            darkMode ? 'bg-gray-800 border border-gray-700' : 'bg-white border border-gray-100'
+          <div className={`rounded-3xl p-8 shadow-sm border-2 border-blue-200 transition-colors duration-300 ${
+            darkMode ? 'bg-gray-800 border-blue-400' : 'bg-white border-blue-200'
           }`}>
             <div className="flex items-center justify-between mb-8">
               <h3 className={`text-2xl font-bold transition-colors duration-300 ${
