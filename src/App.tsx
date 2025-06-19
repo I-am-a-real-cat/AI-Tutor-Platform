@@ -138,7 +138,7 @@ function AppContent() {
       return (
         <div 
           className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 57%, rgba(109, 148, 231, 1) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
         >
           <Navbar 
             darkMode={darkMode} 
@@ -156,7 +156,7 @@ function AppContent() {
       return (
         <div 
           className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 57%, rgba(109, 148, 231, 1) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
         >
           <Navbar 
             darkMode={darkMode} 
@@ -187,7 +187,7 @@ function AppContent() {
       return (
         <div 
           className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 57%, rgba(109, 148, 231, 1) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
         >
           <Navbar 
             darkMode={darkMode} 
@@ -214,7 +214,7 @@ function AppContent() {
       return (
         <div 
           className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 57%, rgba(109, 148, 231, 1) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
         >
           <Navbar 
             darkMode={darkMode} 
@@ -234,7 +234,7 @@ function AppContent() {
       return (
         <div 
           className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 57%, rgba(109, 148, 231, 1) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
         >
           <Navbar 
             darkMode={darkMode} 
@@ -254,7 +254,7 @@ function AppContent() {
       return (
         <div 
           className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 57%, rgba(109, 148, 231, 1) 100%)' }}
+          style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
         >
           <Navbar 
             darkMode={darkMode} 
