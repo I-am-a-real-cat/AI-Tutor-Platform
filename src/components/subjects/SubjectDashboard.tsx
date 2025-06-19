@@ -186,7 +186,7 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
     return (
       <div 
         className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-        style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex items-center space-x-4 mb-8">
@@ -507,7 +507,7 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
   return (
     <div 
       className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}
-      style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 1) 80%, rgba(109, 148, 231, 1) 100%)' }}
+      style={{ background: 'linear-gradient(180deg, rgba(255, 255, 255, 1) 0%, rgba(109, 148, 231, 1) 100%)' }}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
