@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, Filter, Calendar, Clock, Users, BookOpen, 
   Star, ChevronRight, Bell, Award, TrendingUp, Play,
-  FileText, Video, Link, Download, AlertCircle, Bookmark, BookmarkCheck
+  FileText, Video, Link, Download, AlertCircle, Bookmark, BookmarkCheck, Camera, X
 } from 'lucide-react';
 import { EnhancedSubject } from '../../types/subjects';
 import { enhancedSubjects } from '../../data/enhancedSubjects';
@@ -19,6 +19,9 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'bookmark' | 'finish'>('all');
   const [selectedSubject, setSelectedSubject] = useState<EnhancedSubject | null>(null);
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedSubjectForImage, setSelectedSubjectForImage] = useState<string | null>(null);
+  const [customImages, setCustomImages] = useState<Record<string, string>>({});
   const [bookmarkedSubjects, setBookmarkedSubjects] = useState<string[]>(() => {
     const saved = localStorage.getItem('bookmarkedSubjects');
     return saved ? JSON.parse(saved) : [];
@@ -83,6 +86,23 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
     }
   };
 
+  const handleImageChangeClick = (e: React.MouseEvent, subjectId: string) => {
+    e.stopPropagation();
+    setSelectedSubjectForImage(subjectId);
+    setShowImageModal(true);
+  };
+
+  const handleImageSelect = (imageUrl: string) => {
+    if (selectedSubjectForImage) {
+      setCustomImages(prev => ({
+        ...prev,
+        [selectedSubjectForImage]: imageUrl
+      }));
+    }
+    setShowImageModal(false);
+    setSelectedSubjectForImage(null);
+  };
+
   // Function to get current topic name for each subject
   const getCurrentTopicName = (subjectName: string, completedTopics: number): string => {
     const topicMap: Record<string, string[]> = {
@@ -97,6 +117,69 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
     const topics = topicMap[subjectName] || ['General Topics'];
     // Return the topic at the current progress index (completedTopics represents the next topic to learn)
     return topics[Math.min(completedTopics, topics.length - 1)] || 'Advanced Topics';
+  };
+
+  // Function to get subject-specific header images
+  const getSubjectHeaderImage = (subjectName: string, subjectId: string): string => {
+    // Check if there's a custom image for this subject
+    if (customImages[subjectId]) {
+      return customImages[subjectId];
+    }
+
+    const imageMap: Record<string, string> = {
+      'Mathematics': 'https://images.pexels.com/photos/6256/mathematics-blackboard-education-classroom.jpg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Physics': 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Chemistry': 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Biology': 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'History': 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Literature': 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2'
+    };
+    
+    return imageMap[subjectName] || 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2';
+  };
+
+  // Predefined image options for each subject
+  const getImageOptions = (subjectName: string) => {
+    const imageOptions: Record<string, { url: string; title: string }[]> = {
+      'Mathematics': [
+        { url: 'https://images.pexels.com/photos/6256/mathematics-blackboard-education-classroom.jpg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Blackboard with Equations' },
+        { url: 'https://images.pexels.com/photos/3729557/pexels-photo-3729557.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Mathematical Formulas' },
+        { url: 'https://images.pexels.com/photos/1181263/pexels-photo-1181263.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Calculator and Notes' },
+        { url: 'https://images.pexels.com/photos/3729557/pexels-photo-3729557.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Geometric Shapes' }
+      ],
+      'Physics': [
+        { url: 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Laboratory Equipment' },
+        { url: 'https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Physics Formulas' },
+        { url: 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Scientific Instruments' },
+        { url: 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Atomic Structure' }
+      ],
+      'Chemistry': [
+        { url: 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Laboratory Glassware' },
+        { url: 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Chemical Reactions' },
+        { url: 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Molecular Models' },
+        { url: 'https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Periodic Table' }
+      ],
+      'Biology': [
+        { url: 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Microscopic View' },
+        { url: 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Cell Structure' },
+        { url: 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'DNA Helix' },
+        { url: 'https://images.pexels.com/photos/2280571/pexels-photo-2280571.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Plant Biology' }
+      ],
+      'History': [
+        { url: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Ancient Books' },
+        { url: 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Historical Documents' },
+        { url: 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Ancient Artifacts' },
+        { url: 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Historical Maps' }
+      ],
+      'Literature': [
+        { url: 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Classic Literature' },
+        { url: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Poetry Books' },
+        { url: 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Writing Desk' },
+        { url: 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Manuscript' }
+      ]
+    };
+
+    return imageOptions[subjectName] || imageOptions['Literature'];
   };
 
   if (selectedSubject) {
@@ -489,89 +572,112 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
               <div
                 key={subject.id}
                 onClick={() => handleSubjectClick(subject)}
-                className={`group cursor-pointer border rounded-xl p-6 hover:border-blue-400 hover:shadow-lg transition-all duration-200 ${
+                className={`group cursor-pointer border rounded-xl overflow-hidden hover:border-blue-400 hover:shadow-lg transition-all duration-200 ${
                   darkMode 
                     ? 'bg-gray-800 border-gray-700 hover:bg-gray-750' 
                     : 'bg-white border-gray-200'
                 }`}
               >
-                <div className="flex items-start justify-between mb-4">
-                  <div className={`w-12 h-12 rounded-lg bg-gradient-to-r ${subject.color} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                    <span className="text-white font-bold text-lg">{subject.name.charAt(0)}</span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={(e) => handleBookmarkClick(e, subject.id)}
-                      className={`p-1.5 rounded-lg transition-colors ${
-                        isBookmarked
-                          ? 'text-blue-600 hover:text-blue-700'
-                          : darkMode
-                          ? 'text-gray-400 hover:text-gray-300'
-                          : 'text-gray-400 hover:text-gray-600'
-                      }`}
-                    >
-                      {isBookmarked ? (
-                        <BookmarkCheck className="w-4 h-4" />
-                      ) : (
-                        <Bookmark className="w-4 h-4" />
-                      )}
-                    </button>
-                    {isFinished && (
-                      <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                        <Award className="w-3 h-3 text-white" />
-                      </div>
-                    )}
-                    <div className={`px-2 py-1 text-xs font-medium rounded-full ${
-                      subject.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
-                      subject.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-red-100 text-red-800'
-                    }`}>
-                      {subject.difficulty}
+                {/* Header Image */}
+                <div className="relative h-32 overflow-hidden">
+                  <img
+                    src={getSubjectHeaderImage(subject.name, subject.id)}
+                    alt={subject.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
+                  
+                  {/* Change Image Icon */}
+                  <button
+                    onClick={(e) => handleImageChangeClick(e, subject.id)}
+                    className="absolute top-3 left-3 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                    title="Change image"
+                  >
+                    <Camera className="w-4 h-4 text-white" />
+                  </button>
+
+                  {/* Subject Icon */}
+                  <div className="absolute top-3 right-3">
+                    <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${subject.color} flex items-center justify-center shadow-lg`}>
+                      <span className="text-white font-bold text-lg">{subject.name.charAt(0)}</span>
                     </div>
                   </div>
                 </div>
-                
-                <h3 className={`text-lg font-semibold mb-2 group-hover:text-blue-600 transition-colors ${
-                  darkMode ? 'text-white' : 'text-gray-900'
-                }`}>
-                  {subject.name}
-                </h3>
-                <p className={`text-sm mb-4 transition-colors duration-300 ${
-                  darkMode ? 'text-gray-400' : 'text-gray-600'
-                }`}>{subject.description}</p>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between text-sm">
-                    <span className={`transition-colors duration-300 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      {subject.completedTopics}/{subject.totalTopics} topics: {isFinished ? 'Completed!' : currentTopicName}
-                    </span>
-                    <span className={`font-medium transition-colors duration-300 ${
-                      isFinished ? 'text-green-600' : darkMode ? 'text-white' : 'text-gray-900'
-                    }`}>{Math.round(progress)}%</span>
-                  </div>
-                  <div className={`w-full rounded-full h-2 ${
-                    darkMode ? 'bg-gray-700' : 'bg-gray-200'
-                  }`}>
-                    <div
-                      className={`h-2 rounded-full transition-all duration-500 ${
-                        isFinished ? 'bg-green-500' : `bg-gradient-to-r ${subject.color}`
-                      }`}
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
-                </div>
 
-                {/* Action Buttons */}
-                <div className="flex items-center justify-end pt-4 border-t border-opacity-20 border-gray-300">
-                  <div className="flex items-center space-x-2">
-                    <span className={`text-sm transition-colors duration-300 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>{isFinished ? 'Review' : 'Continue'}</span>
-                    <ChevronRight className={`w-4 h-4 group-hover:text-blue-600 transition-colors ${
-                      darkMode ? 'text-gray-400' : 'text-gray-400'
-                    }`} />
+                {/* Card Content */}
+                <div className="p-6">
+                  <h3 className={`text-lg font-semibold mb-2 group-hover:text-blue-600 transition-colors ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {subject.name}
+                  </h3>
+                  <p className={`text-sm mb-4 transition-colors duration-300 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{subject.description}</p>
+                  
+                  <div className="space-y-2 mb-4">
+                    <div className="flex justify-between text-sm">
+                      <span className={`transition-colors duration-300 ${
+                        darkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
+                        {subject.completedTopics}/{subject.totalTopics} topics: {isFinished ? 'Completed!' : currentTopicName}
+                      </span>
+                      <span className={`font-medium transition-colors duration-300 ${
+                        isFinished ? 'text-green-600' : darkMode ? 'text-white' : 'text-gray-900'
+                      }`}>{Math.round(progress)}%</span>
+                    </div>
+                    <div className={`w-full rounded-full h-2 ${
+                      darkMode ? 'bg-gray-700' : 'bg-gray-200'
+                    }`}>
+                      <div
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          isFinished ? 'bg-green-500' : `bg-gradient-to-r ${subject.color}`
+                        }`}
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex items-center justify-between pt-4 border-t border-opacity-20 border-gray-300">
+                    <div className="flex items-center space-x-2">
+                      <button
+                        onClick={(e) => handleBookmarkClick(e, subject.id)}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isBookmarked
+                            ? 'text-blue-600 hover:text-blue-700'
+                            : darkMode
+                            ? 'text-gray-400 hover:text-gray-300'
+                            : 'text-gray-400 hover:text-gray-600'
+                        }`}
+                      >
+                        {isBookmarked ? (
+                          <BookmarkCheck className="w-4 h-4" />
+                        ) : (
+                          <Bookmark className="w-4 h-4" />
+                        )}
+                      </button>
+                      {isFinished && (
+                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
+                          <Award className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      <div className={`px-2 py-1 text-xs font-medium rounded-full ${
+                        subject.difficulty === 'Beginner' ? 'bg-green-100 text-green-800' :
+                        subject.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-red-100 text-red-800'
+                      }`}>
+                        {subject.difficulty}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <span className={`text-sm transition-colors duration-300 ${
+                        darkMode ? 'text-gray-400' : 'text-gray-600'
+                      }`}>{isFinished ? 'Review' : 'Continue'}</span>
+                      <ChevronRight className={`w-4 h-4 group-hover:text-blue-600 transition-colors ${
+                        darkMode ? 'text-gray-400' : 'text-gray-400'
+                      }`} />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -597,6 +703,67 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
           </div>
         )}
       </div>
+
+      {/* Image Selection Modal */}
+      {showImageModal && selectedSubjectForImage && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className={`max-w-2xl w-full rounded-xl p-6 max-h-[80vh] overflow-y-auto transition-colors duration-300 ${
+            darkMode ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className="flex items-center justify-between mb-6">
+              <h3 className={`text-lg font-semibold transition-colors duration-300 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>Choose Header Image</h3>
+              <button
+                onClick={() => setShowImageModal(false)}
+                className={`p-2 rounded-lg transition-colors ${
+                  darkMode 
+                    ? 'text-gray-400 hover:text-gray-300 hover:bg-gray-700' 
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
+                }`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              {getImageOptions(
+                subjects.find(s => s.id === selectedSubjectForImage)?.name || 'Literature'
+              ).map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleImageSelect(option.url)}
+                  className={`group relative overflow-hidden rounded-lg border-2 border-transparent hover:border-blue-400 transition-all duration-200 ${
+                    darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                  }`}
+                >
+                  <img
+                    src={option.url}
+                    alt={option.title}
+                    className="w-full h-24 object-cover group-hover:scale-105 transition-transform duration-200"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <p className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      {option.title}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className={`mt-6 p-4 rounded-lg transition-colors duration-300 ${
+              darkMode ? 'bg-gray-700' : 'bg-gray-50'
+            }`}>
+              <p className={`text-sm transition-colors duration-300 ${
+                darkMode ? 'text-gray-300' : 'text-gray-600'
+              }`}>
+                Select an image to customize the header of your subject card. You can change it anytime by clicking the camera icon.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
