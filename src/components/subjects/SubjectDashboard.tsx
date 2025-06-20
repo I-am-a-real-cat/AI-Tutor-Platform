@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, Filter, Calendar, Clock, Users, BookOpen, 
   Star, ChevronRight, Bell, Award, TrendingUp, Play,
-  FileText, Video, Link, Download, AlertCircle, Bookmark, BookmarkCheck, Camera, X, Trash2
+  FileText, Video, Link, Download, AlertCircle, Bookmark, BookmarkCheck, Camera, X, Trash2, Brain
 } from 'lucide-react';
 import { EnhancedSubject } from '../../types/subjects';
 import { enhancedSubjects } from '../../data/enhancedSubjects';
@@ -34,22 +34,8 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Get all subjects from props or localStorage
-  const getAllSubjects = (): Subject[] => {
-    if (propSubjects) {
-      return propSubjects;
-    }
-    
-    const savedSubjects = localStorage.getItem('allSubjects');
-    if (savedSubjects) {
-      return JSON.parse(savedSubjects);
-    }
-    
-    // Return empty array if no subjects exist
-    return [];
-  };
-
-  const subjects = getAllSubjects();
+  // ONLY use subjects from props (which come from localStorage) - no fallback to any default subjects
+  const subjects = propSubjects || [];
 
   const filteredSubjects = subjects.filter(subject => {
     const matchesSearch = subject.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -135,6 +121,12 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
     }
     setShowImageModal(false);
     setSelectedSubjectForImage(null);
+  };
+
+  const handleCreateFirstCourse = () => {
+    // Navigate to AI Tutor
+    window.location.hash = 'ai-tutor';
+    onBack(); // This will trigger navigation to AI Tutor
   };
 
   // Function to get current topic name for each subject
@@ -742,10 +734,10 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
                'No subjects available. Create your first course using the AI Tutor!'}
             </p>
             <button
-              onClick={() => window.location.href = '#ai-tutor'}
+              onClick={handleCreateFirstCourse}
               className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
             >
-              <BookOpen className="w-5 h-5 mr-2" />
+              <Brain className="w-5 h-5 mr-2" />
               Create Your First Course
             </button>
           </div>
