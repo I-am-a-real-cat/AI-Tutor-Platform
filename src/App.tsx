@@ -101,6 +101,20 @@ function AppContent() {
     setCurrentView('subjects');
   };
 
+  const handleDeleteSubject = (subjectId: string) => {
+    // Remove from subjects list
+    setSubjects(prev => prev.filter(subject => subject.id !== subjectId));
+    
+    // Remove from bookmarks if it was bookmarked
+    setBookmarkedSubjects(prev => prev.filter(id => id !== subjectId));
+    
+    // If the deleted subject was currently selected, go back to subjects view
+    if (selectedSubject?.id === subjectId) {
+      setSelectedSubject(undefined);
+      setCurrentView('subjects');
+    }
+  };
+
   const handleStartChat = () => {
     setSelectedSubject(undefined);
     setCurrentView('ai-tutor');
@@ -193,6 +207,7 @@ function AppContent() {
             darkMode={darkMode}
             onSelectSubject={handleSelectSubject}
             subjects={subjects}
+            onDeleteSubject={handleDeleteSubject}
           />
         </div>
       );

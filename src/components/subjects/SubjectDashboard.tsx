@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, Filter, Calendar, Clock, Users, BookOpen, 
   Star, ChevronRight, Bell, Award, TrendingUp, Play,
-  FileText, Video, Link, Download, AlertCircle, Bookmark, BookmarkCheck, Camera, X
+  FileText, Video, Link, Download, AlertCircle, Bookmark, BookmarkCheck, Camera, X, Trash2
 } from 'lucide-react';
 import { EnhancedSubject } from '../../types/subjects';
 import { enhancedSubjects } from '../../data/enhancedSubjects';
@@ -13,13 +13,15 @@ interface SubjectDashboardProps {
   darkMode: boolean;
   onSelectSubject?: (subject: Subject) => void;
   subjects?: Subject[];
+  onDeleteSubject?: (subjectId: string) => void;
 }
 
 export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ 
   onBack, 
   darkMode, 
   onSelectSubject,
-  subjects: propSubjects
+  subjects: propSubjects,
+  onDeleteSubject
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'bookmark' | 'finish'>('all');
@@ -163,6 +165,16 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
     localStorage.setItem('bookmarkedSubjects', JSON.stringify(newBookmarkedSubjects));
   };
 
+  const handleDeleteClick = (e: React.MouseEvent, subjectId: string, subjectName: string) => {
+    e.stopPropagation();
+    
+    if (window.confirm(`Are you sure you want to delete "${subjectName}"? This action cannot be undone.`)) {
+      if (onDeleteSubject) {
+        onDeleteSubject(subjectId);
+      }
+    }
+  };
+
   const handleSubjectClick = (subject: Subject) => {
     if (onSelectSubject) {
       onSelectSubject(subject);
@@ -263,6 +275,13 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
     };
 
     return imageOptions[subjectName] || imageOptions['Literature'];
+  };
+
+  // Check if a subject is deletable (custom/AI-generated subjects)
+  const isSubjectDeletable = (subjectId: string): boolean => {
+    // Original subjects that shouldn't be deleted
+    const originalSubjectIds = ['math', 'physics', 'chemistry', 'biology', 'history', 'literature'];
+    return !originalSubjectIds.includes(subjectId);
   };
 
   if (selectedSubject) {
@@ -650,6 +669,7 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
             const isBookmarked = bookmarkedSubjects.includes(subject.id);
             const isFinished = progress === 100;
             const currentTopicName = getCurrentTopicName(subject.name, subject.completedTopics);
+            const isDeletable = isSubjectDeletable(subject.id);
             
             return (
               <div
@@ -670,14 +690,26 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                   
-                  {/* Change Image Icon */}
-                  <button
-                    onClick={(e) => handleImageChangeClick(e, subject.id)}
-                    className="absolute top-3 left-3 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                    title="Change image"
-                  >
-                    <Camera className="w-4 h-4 text-white" />
-                  </button>
+                  {/* Action Icons */}
+                  <div className="absolute top-3 left-3 flex space-x-2">
+                    <button
+                      onClick={(e) => handleImageChangeClick(e, subject.id)}
+                      className="w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                      title="Change image"
+                    >
+                      <Camera className="w-4 h-4 text-white" />
+                    </button>
+                    
+                    {isDeletable && (
+                      <button
+                        onClick={(e) => handleDeleteClick(e, subject.id, subject.name)}
+                        className="w-8 h-8 bg-red-500/80 hover:bg-red-600/90 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                        title="Delete subject"
+                      >
+                        <Trash2 className="w-4 h-4 text-white" />
+                      </button>
+                    )}
+                  </div>
 
                   {/* Subject Icon */}
                   <div className="absolute top-3 right-3">

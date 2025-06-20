@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { User, Subject, WeakArea, LearningSession } from '../types';
-import { Brain, Target, ArrowRight, BookOpen, Bookmark, BookmarkCheck, ExternalLink, Camera, X } from 'lucide-react';
+import { Brain, Target, ArrowRight, BookOpen, Bookmark, BookmarkCheck, ExternalLink, Camera, X, Trash2 } from 'lucide-react';
 
 interface DashboardProps {
   user: User;
@@ -14,6 +14,7 @@ interface DashboardProps {
   bookmarkedSubjects: string[];
   onToggleBookmark: (subjectId: string) => void;
   onNavigateToSubjects?: () => void;
+  onDeleteSubject?: (subjectId: string) => void;
 }
 
 export const Dashboard: React.FC<DashboardProps> = ({
@@ -27,7 +28,8 @@ export const Dashboard: React.FC<DashboardProps> = ({
   darkMode,
   bookmarkedSubjects,
   onToggleBookmark,
-  onNavigateToSubjects
+  onNavigateToSubjects,
+  onDeleteSubject
 }) => {
   const [showImageModal, setShowImageModal] = useState(false);
   const [selectedSubjectForImage, setSelectedSubjectForImage] = useState<string | null>(null);
@@ -43,6 +45,16 @@ export const Dashboard: React.FC<DashboardProps> = ({
   const handleBookmarkClick = (e: React.MouseEvent, subjectId: string) => {
     e.stopPropagation();
     onToggleBookmark(subjectId);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent, subjectId: string, subjectName: string) => {
+    e.stopPropagation();
+    
+    if (window.confirm(`Are you sure you want to delete "${subjectName}"? This action cannot be undone.`)) {
+      if (onDeleteSubject) {
+        onDeleteSubject(subjectId);
+      }
+    }
   };
 
   const handleSubjectClick = (subject: Subject) => {
@@ -145,6 +157,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
     return imageOptions[subjectName] || imageOptions['Literature'];
   };
 
+  // Check if a subject is deletable (custom/AI-generated subjects)
+  const isSubjectDeletable = (subjectId: string): boolean => {
+    // Original subjects that shouldn't be deleted
+    const originalSubjectIds = ['math', 'physics', 'chemistry', 'biology', 'history', 'literature'];
+    return !originalSubjectIds.includes(subjectId);
+  };
+
   return (
     <div className={`min-h-screen transition-colors duration-300 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -226,6 +245,7 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   const progress = (subject.completedTopics / subject.totalTopics) * 100;
                   const isBookmarked = bookmarkedSubjects.includes(subject.id);
                   const currentTopicName = getCurrentTopicName(subject.name, subject.completedTopics);
+                  const isDeletable = isSubjectDeletable(subject.id);
                   
                   return (
                     <div
@@ -246,14 +266,26 @@ export const Dashboard: React.FC<DashboardProps> = ({
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent"></div>
                         
-                        {/* Change Image Icon */}
-                        <button
-                          onClick={(e) => handleImageChangeClick(e, subject.id)}
-                          className="absolute top-3 left-3 w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                          title="Change image"
-                        >
-                          <Camera className="w-4 h-4 text-white" />
-                        </button>
+                        {/* Action Icons */}
+                        <div className="absolute top-3 left-3 flex space-x-2">
+                          <button
+                            onClick={(e) => handleImageChangeClick(e, subject.id)}
+                            className="w-8 h-8 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                            title="Change image"
+                          >
+                            <Camera className="w-4 h-4 text-white" />
+                          </button>
+                          
+                          {isDeletable && (
+                            <button
+                              onClick={(e) => handleDeleteClick(e, subject.id, subject.name)}
+                              className="w-8 h-8 bg-red-500/80 hover:bg-red-600/90 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                              title="Delete subject"
+                            >
+                              <Trash2 className="w-4 h-4 text-white" />
+                            </button>
+                          )}
+                        </div>
 
                         {/* Subject Icon */}
                         <div className="absolute top-3 right-3">
