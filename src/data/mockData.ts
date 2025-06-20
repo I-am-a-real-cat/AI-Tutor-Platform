@@ -12,68 +12,8 @@ export const mockUser: User = {
   xp: 2340
 };
 
-export const subjects: Subject[] = [
-  {
-    id: 'math',
-    name: 'Mathematics',
-    icon: 'Calculator',
-    description: 'Algebra, Calculus, Geometry, and Statistics',
-    color: 'from-blue-500 to-blue-600',
-    totalTopics: 24,
-    completedTopics: 18,
-    difficulty: 'Intermediate'
-  },
-  {
-    id: 'physics',
-    name: 'Physics',
-    icon: 'Atom',
-    description: 'Mechanics, Thermodynamics, Electromagnetism',
-    color: 'from-purple-500 to-purple-600',
-    totalTopics: 20,
-    completedTopics: 12,
-    difficulty: 'Advanced'
-  },
-  {
-    id: 'chemistry',
-    name: 'Chemistry',
-    icon: 'FlaskConical',
-    description: 'Organic, Inorganic, and Physical Chemistry',
-    color: 'from-green-500 to-green-600',
-    totalTopics: 18,
-    completedTopics: 15,
-    difficulty: 'Intermediate'
-  },
-  {
-    id: 'biology',
-    name: 'Biology',
-    icon: 'Dna',
-    description: 'Cell Biology, Genetics, Ecology, and Evolution',
-    color: 'from-emerald-500 to-emerald-600',
-    totalTopics: 22,
-    completedTopics: 20,
-    difficulty: 'Beginner'
-  },
-  {
-    id: 'history',
-    name: 'History',
-    icon: 'Scroll',
-    description: 'World History, Ancient Civilizations, Modern Era',
-    color: 'from-amber-500 to-amber-600',
-    totalTopics: 16,
-    completedTopics: 10,
-    difficulty: 'Beginner'
-  },
-  {
-    id: 'literature',
-    name: 'Literature',
-    icon: 'BookOpen',
-    description: 'Classic Literature, Poetry, Writing Techniques',
-    color: 'from-rose-500 to-rose-600',
-    totalTopics: 14,
-    completedTopics: 8,
-    difficulty: 'Intermediate'
-  }
-];
+// Empty subjects array - all subjects will be AI-generated/custom
+export const subjects: Subject[] = [];
 
 export const mathQuestions: QuizQuestion[] = [
   {
