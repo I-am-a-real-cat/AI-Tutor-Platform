@@ -14,6 +14,7 @@ interface AITutorInterfaceProps {
   onNavigateToSubjects?: () => void;
   onNavigateToDashboard?: () => void;
   onNavigateToStudy?: (subject: Subject, moduleId?: string, lessonId?: string) => void;
+  onCreateSubject?: (subject: Subject) => void;
 }
 
 interface CourseTreeItem {
@@ -67,7 +68,8 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
   onStartChat, 
   onNavigateToSubjects,
   onNavigateToDashboard,
-  onNavigateToStudy
+  onNavigateToStudy,
+  onCreateSubject
 }) => {
   const { user } = useAuth();
   const [selectedLevel, setSelectedLevel] = useState('Beginner');
@@ -239,9 +241,63 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
     setSearchTerm('');
   };
 
+  const generateSubjectColor = (topic: string): string => {
+    const colorMap: Record<string, string> = {
+      'javascript': 'from-yellow-500 to-yellow-600',
+      'react': 'from-blue-500 to-blue-600',
+      'python': 'from-green-500 to-green-600',
+      'machine learning': 'from-purple-500 to-purple-600',
+      'data science': 'from-indigo-500 to-indigo-600',
+      'web development': 'from-pink-500 to-pink-600',
+      'artificial intelligence': 'from-red-500 to-red-600',
+      'blockchain': 'from-orange-500 to-orange-600',
+      'cybersecurity': 'from-gray-500 to-gray-600',
+      'mobile development': 'from-teal-500 to-teal-600'
+    };
+
+    // Check if topic contains any of the keywords
+    const topicLower = topic.toLowerCase();
+    for (const [keyword, color] of Object.entries(colorMap)) {
+      if (topicLower.includes(keyword)) {
+        return color;
+      }
+    }
+
+    // Default colors based on topic length for variety
+    const colors = [
+      'from-blue-500 to-blue-600',
+      'from-green-500 to-green-600',
+      'from-purple-500 to-purple-600',
+      'from-red-500 to-red-600',
+      'from-yellow-500 to-yellow-600',
+      'from-pink-500 to-pink-600'
+    ];
+    
+    return colors[topic.length % colors.length];
+  };
+
   const handleGenerateCourse = () => {
-    if (selectedTopic.trim()) {
-      onStartChat();
+    if (selectedTopic.trim() && onCreateSubject) {
+      // Create a new subject based on the user's input
+      const newSubject: Subject = {
+        id: `custom-${Date.now()}`,
+        name: selectedTopic.trim(),
+        icon: 'BookOpen',
+        description: `AI-generated course on ${selectedTopic.trim()} tailored for ${selectedLevel.toLowerCase()} level`,
+        color: generateSubjectColor(selectedTopic),
+        totalTopics: Math.floor(Math.random() * 10) + 8, // Random between 8-17 topics
+        completedTopics: 0,
+        difficulty: selectedLevel as 'Beginner' | 'Intermediate' | 'Advanced'
+      };
+
+      // Call the callback to add this subject to the main subjects list
+      onCreateSubject(newSubject);
+      
+      // Clear the input
+      setSelectedTopic('');
+      
+      // Show success message or navigate
+      alert(`Course "${selectedTopic.trim()}" has been created! You can find it in your My Subjects page.`);
     }
   };
 

@@ -13,7 +13,7 @@ import { Navbar } from './components/common/Navbar';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Subject } from './types';
 import { CoreSubject } from './types/learning';
-import { mockUser, subjects, weakAreas, recentSessions } from './data/mockData';
+import { mockUser, subjects as initialSubjects, weakAreas, recentSessions } from './data/mockData';
 
 type AppState = 'dashboard' | 'chat' | 'quiz' | 'profile' | 'subjects' | 'subject-info' | 'analytics' | 'admin' | 'catalog' | 'daily-quizzes' | 'forums' | 'ai-tutor';
 type AuthState = 'login' | 'register';
@@ -24,6 +24,7 @@ function AppContent() {
   const [authView, setAuthView] = useState<AuthState>('login');
   const [selectedSubject, setSelectedSubject] = useState<Subject | undefined>(undefined);
   const [selectedCoreSubject, setSelectedCoreSubject] = useState<CoreSubject | undefined>(undefined);
+  const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -69,6 +70,18 @@ function AppContent() {
     };
     setSelectedSubject(convertedSubject);
     setCurrentView('subject-info');
+  };
+
+  const handleCreateSubject = (newSubject: Subject) => {
+    setSubjects(prev => [...prev, newSubject]);
+    
+    // Automatically bookmark the new subject
+    setBookmarkedSubjects(prev => {
+      if (!prev.includes(newSubject.id)) {
+        return [...prev, newSubject.id];
+      }
+      return prev;
+    });
   };
 
   const handleStartChat = () => {
@@ -199,6 +212,7 @@ function AppContent() {
           onBack={handleBackToDashboard}
           darkMode={darkMode}
           onNavigateToSubjects={handleNavigateToSubjects}
+          onCreateSubject={handleCreateSubject}
         />
       );
     case 'chat':
@@ -215,6 +229,7 @@ function AppContent() {
             onBack={handleBackToDashboard}
             darkMode={darkMode}
             onNavigateToSubjects={handleNavigateToSubjects}
+            onCreateSubject={handleCreateSubject}
           />
         </div>
       );

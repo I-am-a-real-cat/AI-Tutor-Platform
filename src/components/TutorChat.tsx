@@ -10,13 +10,15 @@ interface TutorChatProps {
   onBack: () => void;
   darkMode: boolean;
   onNavigateToSubjects?: () => void;
+  onCreateSubject?: (subject: Subject) => void;
 }
 
 export const TutorChat: React.FC<TutorChatProps> = ({ 
   selectedSubject, 
   onBack, 
   darkMode, 
-  onNavigateToSubjects 
+  onNavigateToSubjects,
+  onCreateSubject
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
@@ -133,6 +135,7 @@ export const TutorChat: React.FC<TutorChatProps> = ({
         onNavigateToSubjects={onNavigateToSubjects}
         onNavigateToDashboard={onBack}
         onNavigateToStudy={handleNavigateToStudy}
+        onCreateSubject={onCreateSubject}
       />
     );
   }
