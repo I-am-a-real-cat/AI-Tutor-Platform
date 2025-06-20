@@ -14,6 +14,7 @@ interface AITutorInterfaceProps {
   onNavigateToSubjects?: () => void;
   onNavigateToDashboard?: () => void;
   onNavigateToStudy?: (subject: Subject, moduleId?: string, lessonId?: string) => void;
+  onCreateSubject?: (subject: Subject) => void;
 }
 
 interface CourseTreeItem {
@@ -67,7 +68,8 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
   onStartChat, 
   onNavigateToSubjects,
   onNavigateToDashboard,
-  onNavigateToStudy
+  onNavigateToStudy,
+  onCreateSubject
 }) => {
   const { user } = useAuth();
   const [selectedLevel, setSelectedLevel] = useState('Beginner');
@@ -81,30 +83,17 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get user's enrolled subjects - filter subjects based on user's academic info
-  const userEnrolledSubjects = subjects.filter(subject => {
-    // If user has enrolled subjects in their academic info, use those
-    if (user?.academicInfo?.enrolledSubjects?.length) {
-      return user.academicInfo.enrolledSubjects.includes(subject.id);
+  // Get all subjects from localStorage (created subjects)
+  const getAllSubjects = (): Subject[] => {
+    const savedSubjects = localStorage.getItem('allSubjects');
+    if (savedSubjects) {
+      return JSON.parse(savedSubjects);
     }
-    // Otherwise, show all subjects (fallback for demo)
-    return true;
-  });
-
-  // Get bookmarked subjects from localStorage
-  const getBookmarkedSubjects = (): string[] => {
-    const saved = localStorage.getItem('bookmarkedSubjects');
-    return saved ? JSON.parse(saved) : [];
+    return [];
   };
 
-  // Filter to show only bookmarked subjects if user has any, otherwise show enrolled subjects
-  const userSubjects = (() => {
-    const bookmarked = getBookmarkedSubjects();
-    if (bookmarked.length > 0) {
-      return userEnrolledSubjects.filter(subject => bookmarked.includes(subject.id));
-    }
-    return userEnrolledSubjects;
-  })();
+  // Get user's created subjects
+  const userSubjects = getAllSubjects();
 
   // Convert user's subjects to course tree format
   const courseTree: CourseTreeItem[] = userSubjects.map(subject => ({
@@ -149,10 +138,29 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
         { name: 'Literary Analysis', lessons: ['Theme and Symbolism', 'Character Development', 'Plot Structure', 'Literary Devices'] },
         { name: 'Poetry', lessons: ['Poetic Forms', 'Meter and Rhythm', 'Figurative Language', 'Famous Poets'] },
         { name: 'Creative Writing', lessons: ['Narrative Techniques', 'Dialogue', 'Setting', 'Editing and Revision'] }
+      ],
+      'JavaScript': [
+        { name: 'Fundamentals', lessons: ['Variables and Data Types', 'Functions', 'Control Flow', 'Objects and Arrays'] },
+        { name: 'DOM Manipulation', lessons: ['Selecting Elements', 'Event Handling', 'Dynamic Content', 'Form Validation'] },
+        { name: 'Advanced Concepts', lessons: ['Closures', 'Promises', 'Async/Await', 'ES6+ Features'] }
+      ],
+      'React': [
+        { name: 'Core Concepts', lessons: ['Components', 'JSX', 'Props and State', 'Event Handling'] },
+        { name: 'Advanced React', lessons: ['Hooks', 'Context API', 'State Management', 'Performance Optimization'] },
+        { name: 'React Ecosystem', lessons: ['Routing', 'Testing', 'Build Tools', 'Deployment'] }
+      ],
+      'Python': [
+        { name: 'Python Basics', lessons: ['Syntax and Variables', 'Data Structures', 'Control Flow', 'Functions'] },
+        { name: 'Object-Oriented Programming', lessons: ['Classes and Objects', 'Inheritance', 'Polymorphism', 'Encapsulation'] },
+        { name: 'Libraries and Frameworks', lessons: ['NumPy', 'Pandas', 'Flask/Django', 'Data Analysis'] }
       ]
     };
 
-    const templates = moduleTemplates[subject.name as keyof typeof moduleTemplates] || moduleTemplates['Mathematics'];
+    const templates = moduleTemplates[subject.name as keyof typeof moduleTemplates] || [
+      { name: 'Introduction', lessons: ['Getting Started', 'Basic Concepts', 'Core Principles', 'First Steps'] },
+      { name: 'Intermediate Topics', lessons: ['Advanced Concepts', 'Practical Applications', 'Problem Solving', 'Best Practices'] },
+      { name: 'Advanced Topics', lessons: ['Expert Techniques', 'Real-world Projects', 'Optimization', 'Mastery'] }
+    ];
     
     return templates.map((template, moduleIndex) => ({
       id: `${subject.id}-module-${moduleIndex}`,
@@ -184,7 +192,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
     const results: SearchResult[] = [];
     const searchLower = term.toLowerCase();
 
-    // Only search through the user's enrolled/bookmarked courses
+    // Search through the user's created courses
     courseTree.forEach(course => {
       // Search in course names
       if (course.name.toLowerCase().includes(searchLower)) {
@@ -239,9 +247,63 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
     setSearchTerm('');
   };
 
+  const generateSubjectColor = (topic: string): string => {
+    const colorMap: Record<string, string> = {
+      'javascript': 'from-yellow-500 to-yellow-600',
+      'react': 'from-blue-500 to-blue-600',
+      'python': 'from-green-500 to-green-600',
+      'machine learning': 'from-purple-500 to-purple-600',
+      'data science': 'from-indigo-500 to-indigo-600',
+      'web development': 'from-pink-500 to-pink-600',
+      'artificial intelligence': 'from-red-500 to-red-600',
+      'blockchain': 'from-orange-500 to-orange-600',
+      'cybersecurity': 'from-gray-500 to-gray-600',
+      'mobile development': 'from-teal-500 to-teal-600'
+    };
+
+    // Check if topic contains any of the keywords
+    const topicLower = topic.toLowerCase();
+    for (const [keyword, color] of Object.entries(colorMap)) {
+      if (topicLower.includes(keyword)) {
+        return color;
+      }
+    }
+
+    // Default colors based on topic length for variety
+    const colors = [
+      'from-blue-500 to-blue-600',
+      'from-green-500 to-green-600',
+      'from-purple-500 to-purple-600',
+      'from-red-500 to-red-600',
+      'from-yellow-500 to-yellow-600',
+      'from-pink-500 to-pink-600'
+    ];
+    
+    return colors[topic.length % colors.length];
+  };
+
   const handleGenerateCourse = () => {
-    if (selectedTopic.trim()) {
-      onStartChat();
+    if (selectedTopic.trim() && onCreateSubject) {
+      // Create a new subject based on the user's input
+      const newSubject: Subject = {
+        id: `custom-${Date.now()}`,
+        name: selectedTopic.trim(),
+        icon: 'BookOpen',
+        description: `AI-generated course on ${selectedTopic.trim()} tailored for ${selectedLevel.toLowerCase()} level`,
+        color: generateSubjectColor(selectedTopic),
+        totalTopics: Math.floor(Math.random() * 10) + 8, // Random between 8-17 topics
+        completedTopics: 0,
+        difficulty: selectedLevel as 'Beginner' | 'Intermediate' | 'Advanced'
+      };
+
+      // Call the callback to add this subject to the main subjects list
+      onCreateSubject(newSubject);
+      
+      // Clear the input
+      setSelectedTopic('');
+      
+      // Show success message or navigate
+      alert(`Course "${selectedTopic.trim()}" has been created! You can find it in your My Subjects page.`);
     }
   };
 
@@ -549,7 +611,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
               </div>
             )}
 
-            {/* Course Tree - Only User's Courses */}
+            {/* Course Tree - All User's Created Courses */}
             <div className="mb-8">
               <h3 className={`text-sm font-semibold mb-4 transition-colors duration-300 ${
                 darkMode ? 'text-gray-300' : 'text-gray-700'
@@ -568,7 +630,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                   <p className={`text-xs mt-1 transition-colors duration-300 ${
                     darkMode ? 'text-gray-500' : 'text-gray-500'
                   }`}>
-                    Bookmark subjects from "My Subjects" to see them here
+                    Create your first course below
                   </p>
                 </div>
               ) : (

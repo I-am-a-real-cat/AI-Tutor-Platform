@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   ArrowLeft, BookOpen, Clock, Users, Star, Play, CheckCircle, 
   Lock, Award, Target, TrendingUp, Calendar, FileText, Video,
-  Download, Share2, Bookmark, BookmarkCheck
+  Bookmark, BookmarkCheck
 } from 'lucide-react';
 import { Subject } from '../../types';
 import { StudyPage } from '../study/StudyPage';
@@ -454,29 +454,10 @@ export const SubjectInfoPage: React.FC<SubjectInfoPageProps> = ({
 
               <button 
                 onClick={handleStartStudy}
-                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium mb-4"
+                className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
               >
                 Continue Learning
               </button>
-
-              <div className="space-y-3">
-                <button className={`w-full flex items-center justify-center px-4 py-2 border rounded-lg transition-colors ${
-                  darkMode 
-                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Materials
-                </button>
-                <button className={`w-full flex items-center justify-center px-4 py-2 border rounded-lg transition-colors ${
-                  darkMode 
-                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}>
-                  <Share2 className="w-4 h-4 mr-2" />
-                  Share Course
-                </button>
-              </div>
             </div>
           </div>
         </div>

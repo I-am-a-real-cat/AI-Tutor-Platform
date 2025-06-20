@@ -13,7 +13,7 @@ import { Navbar } from './components/common/Navbar';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Subject } from './types';
 import { CoreSubject } from './types/learning';
-import { mockUser, subjects, weakAreas, recentSessions } from './data/mockData';
+import { mockUser, weakAreas, recentSessions } from './data/mockData';
 
 type AppState = 'dashboard' | 'chat' | 'quiz' | 'profile' | 'subjects' | 'subject-info' | 'analytics' | 'admin' | 'catalog' | 'daily-quizzes' | 'forums' | 'ai-tutor';
 type AuthState = 'login' | 'register';
@@ -24,6 +24,16 @@ function AppContent() {
   const [authView, setAuthView] = useState<AuthState>('login');
   const [selectedSubject, setSelectedSubject] = useState<Subject | undefined>(undefined);
   const [selectedCoreSubject, setSelectedCoreSubject] = useState<CoreSubject | undefined>(undefined);
+  
+  // Initialize subjects from localStorage (empty array by default)
+  const [subjects, setSubjects] = useState<Subject[]>(() => {
+    const savedSubjects = localStorage.getItem('allSubjects');
+    if (savedSubjects) {
+      return JSON.parse(savedSubjects);
+    }
+    return []; // Start with empty subjects array
+  });
+
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -49,6 +59,11 @@ function AppContent() {
     localStorage.setItem('bookmarkedSubjects', JSON.stringify(bookmarkedSubjects));
   }, [bookmarkedSubjects]);
 
+  // Save subjects to localStorage whenever subjects change
+  useEffect(() => {
+    localStorage.setItem('allSubjects', JSON.stringify(subjects));
+  }, [subjects]);
+
   const handleSelectSubject = (subject: Subject) => {
     setSelectedSubject(subject);
     setCurrentView('subject-info');
@@ -69,6 +84,35 @@ function AppContent() {
     };
     setSelectedSubject(convertedSubject);
     setCurrentView('subject-info');
+  };
+
+  const handleCreateSubject = (newSubject: Subject) => {
+    setSubjects(prev => [...prev, newSubject]);
+    
+    // Automatically bookmark the new subject
+    setBookmarkedSubjects(prev => {
+      if (!prev.includes(newSubject.id)) {
+        return [...prev, newSubject.id];
+      }
+      return prev;
+    });
+
+    // Navigate to My Subjects page to show the new subject
+    setCurrentView('subjects');
+  };
+
+  const handleDeleteSubject = (subjectId: string) => {
+    // Remove from subjects list
+    setSubjects(prev => prev.filter(subject => subject.id !== subjectId));
+    
+    // Remove from bookmarks if it was bookmarked
+    setBookmarkedSubjects(prev => prev.filter(id => id !== subjectId));
+    
+    // If the deleted subject was currently selected, go back to subjects view
+    if (selectedSubject?.id === subjectId) {
+      setSelectedSubject(undefined);
+      setCurrentView('subjects');
+    }
   };
 
   const handleStartChat = () => {
@@ -162,6 +206,8 @@ function AppContent() {
             onBack={handleBackToDashboard}
             darkMode={darkMode}
             onSelectSubject={handleSelectSubject}
+            subjects={subjects}
+            onDeleteSubject={handleDeleteSubject}
           />
         </div>
       );
@@ -199,6 +245,7 @@ function AppContent() {
           onBack={handleBackToDashboard}
           darkMode={darkMode}
           onNavigateToSubjects={handleNavigateToSubjects}
+          onCreateSubject={handleCreateSubject}
         />
       );
     case 'chat':
@@ -215,6 +262,7 @@ function AppContent() {
             onBack={handleBackToDashboard}
             darkMode={darkMode}
             onNavigateToSubjects={handleNavigateToSubjects}
+            onCreateSubject={handleCreateSubject}
           />
         </div>
       );
@@ -256,6 +304,7 @@ function AppContent() {
             bookmarkedSubjects={bookmarkedSubjects}
             onToggleBookmark={toggleBookmark}
             onNavigateToSubjects={handleNavigateToSubjects}
+            onDeleteSubject={handleDeleteSubject}
           />
         </div>
       );
