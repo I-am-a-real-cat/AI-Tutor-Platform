@@ -107,7 +107,11 @@ export const Dashboard: React.FC<DashboardProps> = ({
       'Chemistry': 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
       'Biology': 'https://images.pexels.com/photos/1366919/pexels-photo-1366919.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
       'History': 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
-      'Literature': 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2'
+      'Literature': 'https://images.pexels.com/photos/1370295/pexels-photo-1370295.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      // Default for custom subjects
+      'JavaScript': 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'React': 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2',
+      'Python': 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2'
     };
     
     return imageMap[subjectName] || 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2';
@@ -151,17 +155,28 @@ export const Dashboard: React.FC<DashboardProps> = ({
         { url: 'https://images.pexels.com/photos/159711/books-bookstore-book-reading-159711.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Poetry Books' },
         { url: 'https://images.pexels.com/photos/256262/pexels-photo-256262.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Writing Desk' },
         { url: 'https://images.pexels.com/photos/2280549/pexels-photo-2280549.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Manuscript' }
+      ],
+      'JavaScript': [
+        { url: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Code on Screen' },
+        { url: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Programming Setup' },
+        { url: 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Web Development' },
+        { url: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Coding Environment' }
+      ],
+      'React': [
+        { url: 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'React Development' },
+        { url: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Frontend Code' },
+        { url: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Component Development' },
+        { url: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'UI Development' }
+      ],
+      'Python': [
+        { url: 'https://images.pexels.com/photos/1181671/pexels-photo-1181671.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Python Programming' },
+        { url: 'https://images.pexels.com/photos/270348/pexels-photo-270348.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Data Science' },
+        { url: 'https://images.pexels.com/photos/574071/pexels-photo-574071.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'Machine Learning' },
+        { url: 'https://images.pexels.com/photos/11035380/pexels-photo-11035380.jpeg?auto=compress&cs=tinysrgb&w=400&h=200&dpr=2', title: 'AI Development' }
       ]
     };
 
     return imageOptions[subjectName] || imageOptions['Literature'];
-  };
-
-  // Check if a subject is deletable (custom/AI-generated subjects)
-  const isSubjectDeletable = (subjectId: string): boolean => {
-    // Original subjects that shouldn't be deleted
-    const originalSubjectIds = ['math', 'physics', 'chemistry', 'biology', 'history', 'literature'];
-    return !originalSubjectIds.includes(subjectId);
   };
 
   return (
@@ -221,22 +236,19 @@ export const Dashboard: React.FC<DashboardProps> = ({
               }`} />
               <h3 className={`text-lg font-medium mb-2 transition-colors duration-300 ${
                 darkMode ? 'text-white' : 'text-gray-900'
-              }`}>No Bookmarked Subjects</h3>
+              }`}>No Learning Paths Yet</h3>
               <p className={`mb-6 transition-colors duration-300 ${
                 darkMode ? 'text-gray-400' : 'text-gray-600'
               }`}>
-                Bookmark subjects from the available list to see them here in your learning paths
+                Create your first course using the AI Tutor to get started with personalized learning
               </p>
-              {onNavigateToSubjects && (
-                <button
-                  onClick={onNavigateToSubjects}
-                  className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Go to My Subjects
-                  <ExternalLink className="w-4 h-4 ml-2" />
-                </button>
-              )}
+              <button
+                onClick={onStartChat}
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                <Brain className="w-5 h-5 mr-2" />
+                Create Your First Course
+              </button>
             </div>
           ) : (
             <>
@@ -245,7 +257,6 @@ export const Dashboard: React.FC<DashboardProps> = ({
                   const progress = (subject.completedTopics / subject.totalTopics) * 100;
                   const isBookmarked = bookmarkedSubjects.includes(subject.id);
                   const currentTopicName = getCurrentTopicName(subject.name, subject.completedTopics);
-                  const isDeletable = isSubjectDeletable(subject.id);
                   
                   return (
                     <div
@@ -276,15 +287,13 @@ export const Dashboard: React.FC<DashboardProps> = ({
                             <Camera className="w-4 h-4 text-white" />
                           </button>
                           
-                          {isDeletable && (
-                            <button
-                              onClick={(e) => handleDeleteClick(e, subject.id, subject.name)}
-                              className="w-8 h-8 bg-red-500/80 hover:bg-red-600/90 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
-                              title="Delete subject"
-                            >
-                              <Trash2 className="w-4 h-4 text-white" />
-                            </button>
-                          )}
+                          <button
+                            onClick={(e) => handleDeleteClick(e, subject.id, subject.name)}
+                            className="w-8 h-8 bg-red-500/80 hover:bg-red-600/90 rounded-full flex items-center justify-center transition-colors opacity-0 group-hover:opacity-100"
+                            title="Delete subject"
+                          >
+                            <Trash2 className="w-4 h-4 text-white" />
+                          </button>
                         </div>
 
                         {/* Subject Icon */}

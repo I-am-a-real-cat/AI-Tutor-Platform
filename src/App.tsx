@@ -13,7 +13,7 @@ import { Navbar } from './components/common/Navbar';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { Subject } from './types';
 import { CoreSubject } from './types/learning';
-import { mockUser, subjects as initialSubjects, weakAreas, recentSessions } from './data/mockData';
+import { mockUser, weakAreas, recentSessions } from './data/mockData';
 
 type AppState = 'dashboard' | 'chat' | 'quiz' | 'profile' | 'subjects' | 'subject-info' | 'analytics' | 'admin' | 'catalog' | 'daily-quizzes' | 'forums' | 'ai-tutor';
 type AuthState = 'login' | 'register';
@@ -25,13 +25,13 @@ function AppContent() {
   const [selectedSubject, setSelectedSubject] = useState<Subject | undefined>(undefined);
   const [selectedCoreSubject, setSelectedCoreSubject] = useState<CoreSubject | undefined>(undefined);
   
-  // Initialize subjects from localStorage or use initial subjects
+  // Initialize subjects from localStorage (empty array by default)
   const [subjects, setSubjects] = useState<Subject[]>(() => {
     const savedSubjects = localStorage.getItem('allSubjects');
     if (savedSubjects) {
       return JSON.parse(savedSubjects);
     }
-    return initialSubjects;
+    return []; // Start with empty subjects array
   });
 
   const [darkMode, setDarkMode] = useState(() => {
@@ -304,6 +304,7 @@ function AppContent() {
             bookmarkedSubjects={bookmarkedSubjects}
             onToggleBookmark={toggleBookmark}
             onNavigateToSubjects={handleNavigateToSubjects}
+            onDeleteSubject={handleDeleteSubject}
           />
         </div>
       );
