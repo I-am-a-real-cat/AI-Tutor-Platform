@@ -83,30 +83,17 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get user's enrolled subjects - filter subjects based on user's academic info
-  const userEnrolledSubjects = subjects.filter(subject => {
-    // If user has enrolled subjects in their academic info, use those
-    if (user?.academicInfo?.enrolledSubjects?.length) {
-      return user.academicInfo.enrolledSubjects.includes(subject.id);
+  // Get all subjects from localStorage (created subjects)
+  const getAllSubjects = (): Subject[] => {
+    const savedSubjects = localStorage.getItem('allSubjects');
+    if (savedSubjects) {
+      return JSON.parse(savedSubjects);
     }
-    // Otherwise, show all subjects (fallback for demo)
-    return true;
-  });
-
-  // Get bookmarked subjects from localStorage
-  const getBookmarkedSubjects = (): string[] => {
-    const saved = localStorage.getItem('bookmarkedSubjects');
-    return saved ? JSON.parse(saved) : [];
+    return [];
   };
 
-  // Filter to show only bookmarked subjects if user has any, otherwise show enrolled subjects
-  const userSubjects = (() => {
-    const bookmarked = getBookmarkedSubjects();
-    if (bookmarked.length > 0) {
-      return userEnrolledSubjects.filter(subject => bookmarked.includes(subject.id));
-    }
-    return userEnrolledSubjects;
-  })();
+  // Get user's created subjects
+  const userSubjects = getAllSubjects();
 
   // Convert user's subjects to course tree format
   const courseTree: CourseTreeItem[] = userSubjects.map(subject => ({
@@ -151,10 +138,29 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
         { name: 'Literary Analysis', lessons: ['Theme and Symbolism', 'Character Development', 'Plot Structure', 'Literary Devices'] },
         { name: 'Poetry', lessons: ['Poetic Forms', 'Meter and Rhythm', 'Figurative Language', 'Famous Poets'] },
         { name: 'Creative Writing', lessons: ['Narrative Techniques', 'Dialogue', 'Setting', 'Editing and Revision'] }
+      ],
+      'JavaScript': [
+        { name: 'Fundamentals', lessons: ['Variables and Data Types', 'Functions', 'Control Flow', 'Objects and Arrays'] },
+        { name: 'DOM Manipulation', lessons: ['Selecting Elements', 'Event Handling', 'Dynamic Content', 'Form Validation'] },
+        { name: 'Advanced Concepts', lessons: ['Closures', 'Promises', 'Async/Await', 'ES6+ Features'] }
+      ],
+      'React': [
+        { name: 'Core Concepts', lessons: ['Components', 'JSX', 'Props and State', 'Event Handling'] },
+        { name: 'Advanced React', lessons: ['Hooks', 'Context API', 'State Management', 'Performance Optimization'] },
+        { name: 'React Ecosystem', lessons: ['Routing', 'Testing', 'Build Tools', 'Deployment'] }
+      ],
+      'Python': [
+        { name: 'Python Basics', lessons: ['Syntax and Variables', 'Data Structures', 'Control Flow', 'Functions'] },
+        { name: 'Object-Oriented Programming', lessons: ['Classes and Objects', 'Inheritance', 'Polymorphism', 'Encapsulation'] },
+        { name: 'Libraries and Frameworks', lessons: ['NumPy', 'Pandas', 'Flask/Django', 'Data Analysis'] }
       ]
     };
 
-    const templates = moduleTemplates[subject.name as keyof typeof moduleTemplates] || moduleTemplates['Mathematics'];
+    const templates = moduleTemplates[subject.name as keyof typeof moduleTemplates] || [
+      { name: 'Introduction', lessons: ['Getting Started', 'Basic Concepts', 'Core Principles', 'First Steps'] },
+      { name: 'Intermediate Topics', lessons: ['Advanced Concepts', 'Practical Applications', 'Problem Solving', 'Best Practices'] },
+      { name: 'Advanced Topics', lessons: ['Expert Techniques', 'Real-world Projects', 'Optimization', 'Mastery'] }
+    ];
     
     return templates.map((template, moduleIndex) => ({
       id: `${subject.id}-module-${moduleIndex}`,
@@ -186,7 +192,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
     const results: SearchResult[] = [];
     const searchLower = term.toLowerCase();
 
-    // Only search through the user's enrolled/bookmarked courses
+    // Search through the user's created courses
     courseTree.forEach(course => {
       // Search in course names
       if (course.name.toLowerCase().includes(searchLower)) {
@@ -605,7 +611,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
               </div>
             )}
 
-            {/* Course Tree - Only User's Courses */}
+            {/* Course Tree - All User's Created Courses */}
             <div className="mb-8">
               <h3 className={`text-sm font-semibold mb-4 transition-colors duration-300 ${
                 darkMode ? 'text-gray-300' : 'text-gray-700'
@@ -624,7 +630,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                   <p className={`text-xs mt-1 transition-colors duration-300 ${
                     darkMode ? 'text-gray-500' : 'text-gray-500'
                   }`}>
-                    Bookmark subjects from "My Subjects" to see them here
+                    Create your first course below
                   </p>
                 </div>
               ) : (
