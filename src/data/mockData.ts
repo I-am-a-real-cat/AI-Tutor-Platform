@@ -12,7 +12,7 @@ export const mockUser: User = {
   xp: 2340
 };
 
-// Empty subjects array - all subjects will be AI-generated/custom
+// Completely empty subjects array - all subjects will be AI-generated/custom only
 export const subjects: Subject[] = [];
 
 export const mathQuestions: QuizQuestion[] = [
