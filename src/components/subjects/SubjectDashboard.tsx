@@ -12,9 +12,15 @@ interface SubjectDashboardProps {
   onBack: () => void;
   darkMode: boolean;
   onSelectSubject?: (subject: Subject) => void;
+  subjects?: Subject[];
 }
 
-export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, darkMode, onSelectSubject }) => {
+export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ 
+  onBack, 
+  darkMode, 
+  onSelectSubject,
+  subjects: propSubjects
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'bookmark' | 'finish'>('all');
   const [selectedSubject, setSelectedSubject] = useState<EnhancedSubject | null>(null);
@@ -26,15 +32,19 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Get all subjects from localStorage to include dynamically created ones
+  // Get all subjects from props or localStorage
   const getAllSubjects = (): Subject[] => {
+    if (propSubjects) {
+      return propSubjects;
+    }
+    
     const savedSubjects = localStorage.getItem('allSubjects');
     if (savedSubjects) {
       return JSON.parse(savedSubjects);
     }
     
-    // If no saved subjects, get from initial data and save them
-    const initialSubjects = [
+    // If no saved subjects, return initial data
+    return [
       {
         id: 'math',
         name: 'Mathematics',
@@ -96,9 +106,6 @@ export const SubjectDashboard: React.FC<SubjectDashboardProps> = ({ onBack, dark
         difficulty: 'Intermediate'
       }
     ];
-    
-    localStorage.setItem('allSubjects', JSON.stringify(initialSubjects));
-    return initialSubjects;
   };
 
   const subjects = getAllSubjects();

@@ -24,7 +24,16 @@ function AppContent() {
   const [authView, setAuthView] = useState<AuthState>('login');
   const [selectedSubject, setSelectedSubject] = useState<Subject | undefined>(undefined);
   const [selectedCoreSubject, setSelectedCoreSubject] = useState<CoreSubject | undefined>(undefined);
-  const [subjects, setSubjects] = useState<Subject[]>(initialSubjects);
+  
+  // Initialize subjects from localStorage or use initial subjects
+  const [subjects, setSubjects] = useState<Subject[]>(() => {
+    const savedSubjects = localStorage.getItem('allSubjects');
+    if (savedSubjects) {
+      return JSON.parse(savedSubjects);
+    }
+    return initialSubjects;
+  });
+
   const [darkMode, setDarkMode] = useState(() => {
     const saved = localStorage.getItem('darkMode');
     return saved ? JSON.parse(saved) : false;
@@ -49,6 +58,11 @@ function AppContent() {
   useEffect(() => {
     localStorage.setItem('bookmarkedSubjects', JSON.stringify(bookmarkedSubjects));
   }, [bookmarkedSubjects]);
+
+  // Save subjects to localStorage whenever subjects change
+  useEffect(() => {
+    localStorage.setItem('allSubjects', JSON.stringify(subjects));
+  }, [subjects]);
 
   const handleSelectSubject = (subject: Subject) => {
     setSelectedSubject(subject);
@@ -82,6 +96,9 @@ function AppContent() {
       }
       return prev;
     });
+
+    // Navigate to My Subjects page to show the new subject
+    setCurrentView('subjects');
   };
 
   const handleStartChat = () => {
@@ -175,6 +192,7 @@ function AppContent() {
             onBack={handleBackToDashboard}
             darkMode={darkMode}
             onSelectSubject={handleSelectSubject}
+            subjects={subjects}
           />
         </div>
       );
