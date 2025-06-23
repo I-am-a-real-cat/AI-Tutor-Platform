@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { 
   Brain, BookOpen, Star, Users, Zap, Plus, 
   ChevronDown, ChevronRight, Sparkles, Play, CheckCircle,
-  Clock, Award, Target, Upload, FileText, X, AlertCircle, Search, Link
+  Clock, Award, Target, Upload, FileText, X, AlertCircle, Search, Link, Trash2
 } from 'lucide-react';
 import { subjects } from '../../data/mockData';
 import { Subject } from '../../types';
@@ -91,7 +91,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [newLinkUrl, setNewLinkUrl] = useState('');
   const [newLinkTitle, setNewLinkTitle] = useState('');
-  const [showAddLink, setShowAddLink] = useState(false);
+  const [showLinkForm, setShowLinkForm] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Get all subjects from localStorage (created subjects)
@@ -371,30 +371,54 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
     }
   };
 
-  const getTotalItems = () => uploadedDocs.length + addedLinks.length;
+  const getTotalItemsCount = () => {
+    return uploadedDocs.length + addedLinks.length;
+  };
 
-  const canAddMore = () => getTotalItems() < 4;
+  const getTotalFileSize = () => {
+    return uploadedDocs.reduce((total, doc) => {
+      const sizeInMB = parseFloat(doc.size.replace(/[^\d.]/g, ''));
+      return total + sizeInMB;
+    }, 0);
+  };
 
-  const hasMinimumItems = () => getTotalItems() >= 1;
+  const canAddMoreItems = () => {
+    return getTotalItemsCount() < 4;
+  };
 
   const handleFileUpload = (files: FileList | null) => {
     if (!files) return;
 
-    const remainingSlots = 4 - getTotalItems();
-    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+    const newFiles = Array.from(files);
+    const currentCount = getTotalItemsCount();
+    const availableSlots = 4 - currentCount;
 
-    filesToProcess.forEach(file => {
+    if (newFiles.length > availableSlots) {
+      alert(`You can only add ${availableSlots} more items. Maximum total is 4 files and links combined.`);
+      return;
+    }
+
+    let currentTotalSize = getTotalFileSize();
+
+    for (const file of newFiles) {
       // Check file type
       const allowedTypes = ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
       if (!allowedTypes.includes(file.type)) {
         alert('Please upload only PDF, DOC, DOCX, or TXT files.');
-        return;
+        continue;
       }
 
-      // Check file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        alert('File size must be less than 10MB.');
-        return;
+      // Check individual file size (max 25MB per file for reasonable upload)
+      const fileSizeInMB = file.size / (1024 * 1024);
+      if (fileSizeInMB > 25) {
+        alert(`File "${file.name}" is too large. Maximum file size is 25MB.`);
+        continue;
+      }
+
+      // Check total size limit
+      if (currentTotalSize + fileSizeInMB > 100) {
+        alert(`Adding "${file.name}" would exceed the 100MB total limit. Current total: ${currentTotalSize.toFixed(1)}MB`);
+        continue;
       }
 
       const newDoc: UploadedDocument = {
@@ -406,10 +430,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
       };
 
       setUploadedDocs(prev => [...prev, newDoc]);
-    });
-
-    if (filesToProcess.length < files.length) {
-      alert(`Only ${filesToProcess.length} files were uploaded due to the 4-item limit.`);
+      currentTotalSize += fileSizeInMB;
     }
   };
 
@@ -419,8 +440,8 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
       return;
     }
 
-    if (!canAddMore()) {
-      alert('Maximum of 4 items (files + links) allowed.');
+    if (!canAddMoreItems()) {
+      alert('Maximum of 4 files and links combined allowed.');
       return;
     }
 
@@ -442,7 +463,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
     setAddedLinks(prev => [...prev, newLink]);
     setNewLinkUrl('');
     setNewLinkTitle('');
-    setShowAddLink(false);
+    setShowLinkForm(false);
   };
 
   const formatFileSize = (bytes: number): string => {
@@ -635,10 +656,10 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
               <div className="mb-8">
                 <h3 className={`text-sm font-semibold mb-4 transition-colors duration-300 ${
                   darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>Your Resources ({getTotalItems()}/4)</h3>
+                }`}>Your Resources ({getTotalItemsCount()}/4)</h3>
                 
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {/* Uploaded Documents */}
+                  {/* Documents */}
                   {uploadedDocs.map((doc) => (
                     <div key={doc.id} className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
@@ -667,20 +688,18 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                     </div>
                   ))}
 
-                  {/* Added Links */}
+                  {/* Links */}
                   {addedLinks.map((link) => (
                     <div key={link.id} className={`flex items-center justify-between p-2 rounded-lg border transition-colors ${
                       darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
                     }`}>
                       <div className="flex items-center space-x-2 flex-1 min-w-0">
-                        <Link className={`w-4 h-4 transition-colors duration-300 ${
-                          darkMode ? 'text-blue-400' : 'text-blue-600'
-                        }`} />
+                        <Link className="w-4 h-4 text-blue-500 flex-shrink-0" />
                         <div className="min-w-0 flex-1">
                           <p className={`text-xs font-medium truncate transition-colors duration-300 ${
                             darkMode ? 'text-white' : 'text-gray-900'
                           }`}>{link.title}</p>
-                          <p className={`text-xs truncate transition-colors duration-300 ${
+                          <p className={`text-xs transition-colors duration-300 truncate ${
                             darkMode ? 'text-gray-400' : 'text-gray-600'
                           }`}>{link.url}</p>
                         </div>
@@ -698,6 +717,17 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                     </div>
                   ))}
                 </div>
+
+                {/* Size indicator */}
+                {uploadedDocs.length > 0 && (
+                  <div className={`mt-2 text-xs transition-colors duration-300 ${
+                    getTotalFileSize() > 80 ? 'text-orange-600' : 
+                    getTotalFileSize() > 90 ? 'text-red-600' :
+                    darkMode ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
+                    Total size: {getTotalFileSize().toFixed(1)}MB / 100MB
+                  </div>
+                )}
               </div>
             )}
 
@@ -935,8 +965,11 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                   <div className="flex items-center space-x-3">
                     <button
                       onClick={() => setShowUploadModal(true)}
+                      disabled={!canAddMoreItems()}
                       className={`flex items-center space-x-2 px-4 py-2 border rounded-lg transition-colors ${
-                        darkMode 
+                        !canAddMoreItems()
+                          ? 'opacity-50 cursor-not-allowed'
+                          : darkMode 
                           ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
                           : 'border-gray-300 text-gray-700 hover:bg-gray-50'
                       }`}
@@ -970,7 +1003,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
             <div className="flex items-center justify-between mb-6">
               <h3 className={`text-lg font-semibold transition-colors duration-300 ${
                 darkMode ? 'text-white' : 'text-gray-900'
-              }`}>Add Resources ({getTotalItems()}/4)</h3>
+              }`}>Add Resources ({getTotalItemsCount()}/4)</h3>
               <button
                 onClick={() => setShowUploadModal(false)}
                 className={`p-2 rounded-lg transition-colors ${
@@ -987,7 +1020,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
             <div className="mb-6">
               <h4 className={`text-sm font-medium mb-3 transition-colors duration-300 ${
                 darkMode ? 'text-gray-300' : 'text-gray-700'
-              }`}>Upload Documents</h4>
+              }`}>Upload Files</h4>
               
               <div
                 className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
@@ -996,7 +1029,7 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                     : darkMode
                     ? 'border-gray-600 hover:border-gray-500'
                     : 'border-gray-300 hover:border-gray-400'
-                } ${!canAddMore() ? 'opacity-50 pointer-events-none' : ''}`}
+                }`}
                 onDragEnter={handleDrag}
                 onDragLeave={handleDrag}
                 onDragOver={handleDrag}
@@ -1008,21 +1041,20 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                 <h4 className={`text-sm font-medium mb-2 transition-colors duration-300 ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
-                  {canAddMore() ? 'Drop files here or click to browse' : 'Maximum items reached'}
+                  Drop files here or click to browse
                 </h4>
                 <p className={`text-xs mb-3 transition-colors duration-300 ${
                   darkMode ? 'text-gray-400' : 'text-gray-600'
                 }`}>
-                  PDF, DOC, DOCX, TXT (max 10MB each)
+                  PDF, DOC, DOCX, TXT (max 25MB each)
                 </p>
-                {canAddMore() && (
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                  >
-                    Choose Files
-                  </button>
-                )}
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={!canAddMoreItems()}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm"
+                >
+                  Choose Files
+                </button>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -1040,17 +1072,17 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                 <h4 className={`text-sm font-medium transition-colors duration-300 ${
                   darkMode ? 'text-gray-300' : 'text-gray-700'
                 }`}>Add Links</h4>
-                {canAddMore() && !showAddLink && (
+                {!showLinkForm && canAddMoreItems() && (
                   <button
-                    onClick={() => setShowAddLink(true)}
-                    className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 transition-colors"
+                    onClick={() => setShowLinkForm(true)}
+                    className="text-blue-600 hover:text-blue-700 text-sm font-medium"
                   >
-                    Add Link
+                    + Add Link
                   </button>
                 )}
               </div>
 
-              {showAddLink && (
+              {showLinkForm && (
                 <div className={`border rounded-lg p-4 transition-colors duration-300 ${
                   darkMode ? 'border-gray-600 bg-gray-700' : 'border-gray-200 bg-gray-50'
                 }`}>
@@ -1082,18 +1114,18 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                         onClick={handleAddLink}
                         className="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
                       >
-                        Add
+                        Add Link
                       </button>
                       <button
                         onClick={() => {
-                          setShowAddLink(false);
+                          setShowLinkForm(false);
                           setNewLinkUrl('');
                           setNewLinkTitle('');
                         }}
                         className={`px-3 py-2 border rounded-lg transition-colors text-sm ${
                           darkMode 
                             ? 'border-gray-600 text-gray-300 hover:bg-gray-600' 
-                            : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                            : 'border-gray-300 text-gray-700 hover:bg-gray-100'
                         }`}
                       >
                         Cancel
@@ -1104,96 +1136,8 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
               )}
             </div>
 
-            {/* Current Items Display */}
-            {getTotalItems() > 0 && (
-              <div className="mb-6">
-                <h4 className={`text-sm font-medium mb-3 transition-colors duration-300 ${
-                  darkMode ? 'text-gray-300' : 'text-gray-700'
-                }`}>Added Items ({getTotalItems()}/4)</h4>
-                
-                <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {uploadedDocs.map((doc) => (
-                    <div key={doc.id} className={`flex items-center justify-between p-2 rounded border transition-colors ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className="flex items-center space-x-2 flex-1 min-w-0">
-                        <span className="text-sm">{getFileIcon(doc.type)}</span>
-                        <span className={`text-xs truncate transition-colors duration-300 ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>{doc.name}</span>
-                      </div>
-                      <button
-                        onClick={() => removeDocument(doc.id)}
-                        className={`p-1 rounded transition-colors ${
-                          darkMode 
-                            ? 'text-gray-400 hover:text-red-400' 
-                            : 'text-gray-400 hover:text-red-600'
-                        }`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-
-                  {addedLinks.map((link) => (
-                    <div key={link.id} className={`flex items-center justify-between p-2 rounded border transition-colors ${
-                      darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
-                    }`}>
-                      <div className="flex items-center space-x-2 flex-1 min-w-0">
-                        <Link className={`w-3 h-3 transition-colors duration-300 ${
-                          darkMode ? 'text-blue-400' : 'text-blue-600'
-                        }`} />
-                        <span className={`text-xs truncate transition-colors duration-300 ${
-                          darkMode ? 'text-white' : 'text-gray-900'
-                        }`}>{link.title}</span>
-                      </div>
-                      <button
-                        onClick={() => removeLink(link.id)}
-                        className={`p-1 rounded transition-colors ${
-                          darkMode 
-                            ? 'text-gray-400 hover:text-red-400' 
-                            : 'text-gray-400 hover:text-red-600'
-                        }`}
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Action Buttons */}
-            <div className="flex space-x-3">
-              <button
-                onClick={() => setShowUploadModal(false)}
-                disabled={!hasMinimumItems()}
-                className={`flex-1 px-4 py-2 rounded-lg transition-colors ${
-                  hasMinimumItems()
-                    ? 'bg-blue-600 text-white hover:bg-blue-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Done ({getTotalItems()}/4)
-              </button>
-              <button
-                onClick={() => {
-                  setUploadedDocs([]);
-                  setAddedLinks([]);
-                  setShowUploadModal(false);
-                }}
-                className={`px-4 py-2 border rounded-lg transition-colors ${
-                  darkMode 
-                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
-                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                }`}
-              >
-                Cancel
-              </button>
-            </div>
-
-            {/* Info */}
-            <div className={`mt-4 p-3 rounded-lg transition-colors duration-300 ${
+            {/* Limits Info */}
+            <div className={`p-3 rounded-lg transition-colors duration-300 ${
               darkMode ? 'bg-gray-700' : 'bg-gray-50'
             }`}>
               <div className="flex items-start space-x-2">
@@ -1201,10 +1145,15 @@ export const AITutorInterface: React.FC<AITutorInterfaceProps> = ({
                 <div className="text-xs">
                   <p className={`font-medium transition-colors duration-300 ${
                     darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>Resource Requirements:</p>
-                  <p className={`transition-colors duration-300 ${
+                  }`}>Resource Limits:</p>
+                  <ul className={`mt-1 space-y-1 transition-colors duration-300 ${
                     darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>Add 1-4 files and/or links to enhance your course generation</p>
+                  }`}>
+                    <li>• Maximum 4 files and links combined</li>
+                    <li>• Total file size limit: 100MB</li>
+                    <li>• Individual file limit: 25MB</li>
+                    <li>• At least 1 resource required</li>
+                  </ul>
                 </div>
               </div>
             </div>
