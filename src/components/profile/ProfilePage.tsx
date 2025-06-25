@@ -87,7 +87,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <div className="w-32 h-32 mx-auto mb-6 relative">
                   <img
                     src={editedUser.avatar || user.avatar}
-                    alt={`${user.firstName} ${user.lastName}`}
+                    alt={`${user.firstName || ''} ${user.lastName || ''}`}
                     className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
                   />
                   {isEditing && (
@@ -109,7 +109,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <h2 className={`text-2xl font-bold transition-colors duration-300 ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
-                  {editedUser.firstName || user.firstName} {editedUser.lastName || user.lastName}
+                  {(editedUser.firstName || user.firstName || '') + ' ' + (editedUser.lastName || user.lastName || '')}
                 </h2>
                 <p className={`text-lg transition-colors duration-300 ${
                   darkMode ? 'text-gray-400' : 'text-gray-500'
@@ -188,12 +188,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                         ? 'bg-gray-700 border border-gray-600 text-white' 
                         : 'bg-white border border-gray-200 text-gray-900'
                     }`}
+                    placeholder="Enter your first name"
                   />
                 ) : (
                   <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
                     darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                   }`}>
-                    {user.firstName || ''}
+                    {user.firstName || (
+                      <span className={`italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        Not provided
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -215,12 +220,17 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                         ? 'bg-gray-700 border border-gray-600 text-white' 
                         : 'bg-white border border-gray-200 text-gray-900'
                     }`}
+                    placeholder="Enter your last name"
                   />
                 ) : (
                   <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
                     darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                   }`}>
-                    {user.lastName || ''}
+                    {user.lastName || (
+                      <span className={`italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                        Not provided
+                      </span>
+                    )}
                   </div>
                 )}
               </div>
@@ -271,7 +281,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.phone || ''}
+                      {user.phone || (
+                        <span className={`italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                          Not provided
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -304,7 +318,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.location || ''}
+                      {user.location || (
+                        <span className={`italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                          Not provided
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -336,7 +354,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.dateOfBirth ? user.dateOfBirth.toLocaleDateString() : ''}
+                      {user.dateOfBirth ? user.dateOfBirth.toLocaleDateString() : (
+                        <span className={`italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                          Not provided
+                        </span>
+                      )}
                     </div>
                   )}
                 </div>
@@ -366,7 +388,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <div className={`px-4 py-4 rounded-2xl min-h-[100px] transition-colors duration-300 ${
                   darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                 }`}>
-                  {user.bio || ''}
+                  {user.bio || (
+                    <span className={`italic ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                      No bio provided
+                    </span>
+                  )}
                 </div>
               )}
             </div>
