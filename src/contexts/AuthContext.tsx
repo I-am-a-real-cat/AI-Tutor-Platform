@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthUser, AuthState, LoginCredentials, RegisterData } from '../types/auth';
+import { supabase, signUp, signIn, signOut, getCurrentUser, updateUserProfile } from '../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -62,52 +64,46 @@ const authReducer = (state: AuthState, action: AuthAction): AuthState => {
 const initialState: AuthState = {
   user: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true,
   error: null,
 };
 
-// Mock user data for demo
-const mockUser: AuthUser = {
-  id: '1',
-  email: 'alex.johnson@university.edu',
-  username: 'alexj',
-  firstName: 'Alex',
-  lastName: 'Johnson',
-  avatar: 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2',
-  bio: 'Computer Science student passionate about AI and machine learning.',
-  dateOfBirth: new Date('2000-05-15'),
-  phone: '+1 (555) 123-4567',
-  location: 'San Francisco, CA',
-  joinDate: new Date('2024-01-15'),
-  lastLogin: new Date(),
-  isEmailVerified: true,
-  preferences: {
-    notifications: {
-      email: true,
-      push: true,
-      assignments: true,
-      grades: true,
-      announcements: false,
-    },
-    theme: 'light',
-    language: 'en',
-  },
-  academicInfo: {
-    studentId: 'CS2024001',
-    major: 'Computer Science',
-    year: 'Junior',
-    gpa: 3.8,
-    enrolledSubjects: ['math', 'physics', 'chemistry'],
-  },
-};
-
-// Helper function to convert date strings back to Date objects
-const convertDatesToObjects = (user: any): AuthUser => {
+// Convert Supabase user to AuthUser
+const convertSupabaseUser = (user: User): AuthUser => {
+  const metadata = user.user_metadata || {};
+  
   return {
-    ...user,
-    dateOfBirth: new Date(user.dateOfBirth),
-    joinDate: new Date(user.joinDate),
-    lastLogin: new Date(user.lastLogin),
+    id: user.id,
+    email: user.email || '',
+    username: metadata.username || user.email?.split('@')[0] || '',
+    firstName: metadata.firstName || metadata.first_name || '',
+    lastName: metadata.lastName || metadata.last_name || '',
+    avatar: metadata.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+    bio: metadata.bio || '',
+    dateOfBirth: metadata.dateOfBirth ? new Date(metadata.dateOfBirth) : undefined,
+    phone: metadata.phone || '',
+    location: metadata.location || '',
+    joinDate: new Date(user.created_at),
+    lastLogin: new Date(),
+    isEmailVerified: user.email_confirmed_at !== null,
+    preferences: {
+      notifications: {
+        email: metadata.notifications?.email ?? true,
+        push: metadata.notifications?.push ?? true,
+        assignments: metadata.notifications?.assignments ?? true,
+        grades: metadata.notifications?.grades ?? true,
+        announcements: metadata.notifications?.announcements ?? false,
+      },
+      theme: metadata.theme || 'light',
+      language: metadata.language || 'en',
+    },
+    academicInfo: {
+      studentId: metadata.studentId || '',
+      major: metadata.major || '',
+      year: metadata.year || '',
+      gpa: metadata.gpa || 0,
+      enrolledSubjects: metadata.enrolledSubjects || [],
+    },
   };
 };
 
@@ -115,37 +111,52 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [state, dispatch] = useReducer(authReducer, initialState);
 
   useEffect(() => {
-    // Check for stored auth data on app load
-    const storedUser = localStorage.getItem('authUser');
-    if (storedUser) {
+    // Get initial session
+    const getInitialSession = async () => {
       try {
-        const parsedUser = JSON.parse(storedUser);
-        const user = convertDatesToObjects(parsedUser);
-        dispatch({ type: 'LOGIN_SUCCESS', payload: user });
+        const { user } = await getCurrentUser();
+        if (user) {
+          const authUser = convertSupabaseUser(user);
+          dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+        } else {
+          dispatch({ type: 'SET_LOADING', payload: false });
+        }
       } catch (error) {
-        localStorage.removeItem('authUser');
+        console.error('Error getting initial session:', error);
+        dispatch({ type: 'SET_LOADING', payload: false });
       }
-    }
+    };
+
+    getInitialSession();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          const authUser = convertSupabaseUser(session.user);
+          dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+        } else if (event === 'SIGNED_OUT') {
+          dispatch({ type: 'LOGOUT' });
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const login = async (credentials: LoginCredentials): Promise<void> => {
     dispatch({ type: 'LOGIN_START' });
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const { data, error } = await signIn(credentials.email, credentials.password);
       
-      // Mock validation
-      if (credentials.email === 'demo@example.com' && credentials.password === 'password') {
-        const user = { ...mockUser, lastLogin: new Date() };
-        
-        if (credentials.rememberMe) {
-          localStorage.setItem('authUser', JSON.stringify(user));
-        }
-        
-        dispatch({ type: 'LOGIN_SUCCESS', payload: user });
-      } else {
-        throw new Error('Invalid email or password');
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      if (data.user) {
+        const authUser = convertSupabaseUser(data.user);
+        dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
       }
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE', payload: (error as Error).message });
@@ -156,34 +167,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'LOGIN_START' });
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      const newUser: AuthUser = {
-        ...mockUser,
-        id: Date.now().toString(),
-        email: data.email,
-        username: data.username,
+      const userData = {
         firstName: data.firstName,
         lastName: data.lastName,
-        joinDate: new Date(),
-        lastLogin: new Date(),
-        academicInfo: {
-          ...mockUser.academicInfo,
-          enrolledSubjects: [],
-        },
+        username: data.username,
       };
+
+      const { data: authData, error } = await signUp(data.email, data.password, userData);
       
-      localStorage.setItem('authUser', JSON.stringify(newUser));
-      dispatch({ type: 'LOGIN_SUCCESS', payload: newUser });
+      if (error) {
+        throw new Error(error.message);
+      }
+      
+      if (authData.user) {
+        const authUser = convertSupabaseUser(authData.user);
+        dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+      }
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE', payload: (error as Error).message });
     }
   };
 
-  const logout = (): void => {
-    localStorage.removeItem('authUser');
-    dispatch({ type: 'LOGOUT' });
+  const logout = async (): Promise<void> => {
+    try {
+      await signOut();
+      dispatch({ type: 'LOGOUT' });
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   const updateProfile = async (updates: Partial<AuthUser>): Promise<void> => {
@@ -192,11 +203,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'SET_LOADING', payload: true });
     
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
+      const { error } = await updateUserProfile(updates);
       
-      const updatedUser = { ...state.user, ...updates };
-      localStorage.setItem('authUser', JSON.stringify(updatedUser));
+      if (error) {
+        throw new Error(error.message);
+      }
+      
       dispatch({ type: 'UPDATE_PROFILE', payload: updates });
     } catch (error) {
       console.error('Failed to update profile:', error);
@@ -206,9 +218,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const resetPassword = async (email: string): Promise<void> => {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    console.log('Password reset email sent to:', email);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    
+    if (error) {
+      throw new Error(error.message);
+    }
   };
 
   return (
