@@ -9,6 +9,7 @@ import {
   updateUserProfile,
   getUserProfile,
   updateUserProfileData,
+  ensureUserProfile,
   UserProfile
 } from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
@@ -89,10 +90,10 @@ const convertToAuthUser = (user: User, profile?: UserProfile | null): AuthUser =
     firstName: profile?.first_name || metadata.firstName || metadata.first_name || '',
     lastName: profile?.last_name || metadata.lastName || metadata.last_name || '',
     avatar: profile?.avatar_url || metadata.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-    bio: profile?.bio || metadata.bio || 'Passionate learner exploring new subjects and expanding knowledge through AI-powered education.',
-    dateOfBirth: profile?.date_of_birth ? new Date(profile.date_of_birth) : metadata.dateOfBirth ? new Date(metadata.dateOfBirth) : new Date('1995-06-15'),
-    phone: profile?.phone || metadata.phone || '+1 (555) 123-4567',
-    location: profile?.location || metadata.location || 'San Francisco, CA',
+    bio: profile?.bio || metadata.bio || '',
+    dateOfBirth: profile?.date_of_birth ? new Date(profile.date_of_birth) : metadata.dateOfBirth ? new Date(metadata.dateOfBirth) : undefined,
+    phone: profile?.phone || metadata.phone || '',
+    location: profile?.location || metadata.location || '',
     joinDate: new Date(user.created_at),
     lastLogin: new Date(),
     isEmailVerified: user.email_confirmed_at !== null,
@@ -108,10 +109,10 @@ const convertToAuthUser = (user: User, profile?: UserProfile | null): AuthUser =
       language: profile?.preferences?.language || metadata.language || 'en',
     },
     academicInfo: {
-      studentId: profile?.academic_info?.studentId || metadata.studentId || 'CS2024001',
-      major: profile?.academic_info?.major || metadata.major || 'Computer Science',
-      year: profile?.academic_info?.year || metadata.year || 'Junior',
-      gpa: profile?.academic_info?.gpa || metadata.gpa || 3.8,
+      studentId: profile?.academic_info?.studentId || metadata.studentId || '',
+      major: profile?.academic_info?.major || metadata.major || '',
+      year: profile?.academic_info?.year || metadata.year || '',
+      gpa: profile?.academic_info?.gpa || metadata.gpa || 0,
       enrolledSubjects: profile?.academic_info?.enrolledSubjects || metadata.enrolledSubjects || [],
     },
   };
@@ -126,8 +127,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const { user } = await getCurrentUser();
         if (user) {
-          // Get user profile from database
-          const { data: profile } = await getUserProfile(user.id);
+          // Ensure user profile exists and get it
+          const { data: profile } = await ensureUserProfile(user.id, user.user_metadata);
           const authUser = convertToAuthUser(user, profile);
           dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
         } else {
@@ -145,10 +146,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          // Get user profile from database
-          const { data: profile } = await getUserProfile(session.user.id);
-          const authUser = convertToAuthUser(session.user, profile);
-          dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+          try {
+            // Ensure user profile exists and get it
+            const { data: profile } = await ensureUserProfile(session.user.id, session.user.user_metadata);
+            const authUser = convertToAuthUser(session.user, profile);
+            dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+          } catch (error) {
+            console.error('Error handling sign in:', error);
+            dispatch({ type: 'LOGIN_FAILURE', payload: 'Failed to load user profile' });
+          }
         } else if (event === 'SIGNED_OUT') {
           dispatch({ type: 'LOGOUT' });
         }
@@ -169,8 +175,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (data.user) {
-        // Get user profile from database
-        const { data: profile } = await getUserProfile(data.user.id);
+        // Ensure user profile exists and get it
+        const { data: profile } = await ensureUserProfile(data.user.id, data.user.user_metadata);
         const authUser = convertToAuthUser(data.user, profile);
         dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
       }
@@ -197,11 +203,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (authData.user) {
         // The profile will be created automatically by the trigger
-        // Get the profile after a short delay to ensure it's created
+        // But let's ensure it exists and get it
         setTimeout(async () => {
-          const { data: profile } = await getUserProfile(authData.user!.id);
-          const authUser = convertToAuthUser(authData.user!, profile);
-          dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+          try {
+            const { data: profile } = await ensureUserProfile(authData.user!.id, userData);
+            const authUser = convertToAuthUser(authData.user!, profile);
+            dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+          } catch (error) {
+            console.error('Error creating user profile after signup:', error);
+            // Still allow login even if profile creation fails
+            const authUser = convertToAuthUser(authData.user!, null);
+            dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+          }
         }, 1000);
       }
     } catch (error) {
