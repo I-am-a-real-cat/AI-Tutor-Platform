@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, 
-  Camera
+  Camera, AlertCircle, CheckCircle, GraduationCap, BookOpen
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthUser } from '../../types/auth';
@@ -15,40 +15,91 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
   const { user, updateProfile, isLoading } = useAuth();
   const [isEditing, setIsEditing] = useState(false);
   const [editedUser, setEditedUser] = useState<Partial<AuthUser>>(user || {});
+  const [saveStatus, setSaveStatus] = useState<'idle' | 'saving' | 'success' | 'error'>('idle');
+  const [errorMessage, setErrorMessage] = useState('');
 
   if (!user) return null;
 
   const handleSave = async () => {
-    await updateProfile(editedUser);
-    setIsEditing(false);
+    setSaveStatus('saving');
+    setErrorMessage('');
+    
+    try {
+      await updateProfile(editedUser);
+      setSaveStatus('success');
+      setIsEditing(false);
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSaveStatus('idle'), 3000);
+    } catch (error) {
+      setSaveStatus('error');
+      setErrorMessage((error as Error).message || 'Failed to update profile');
+    }
   };
 
   const handleCancel = () => {
     setEditedUser(user);
     setIsEditing(false);
+    setSaveStatus('idle');
+    setErrorMessage('');
+  };
+
+  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // In a real app, you would upload to Supabase Storage
+      // For now, we'll use a placeholder
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const result = e.target?.result as string;
+        setEditedUser({ ...editedUser, avatar: result });
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Status Messages */}
+      {saveStatus === 'success' && (
+        <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center">
+          <CheckCircle className="w-5 h-5 text-green-600 mr-3" />
+          <span className="text-green-700 text-sm font-medium">Profile updated successfully!</span>
+        </div>
+      )}
+
+      {saveStatus === 'error' && (
+        <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center">
+          <AlertCircle className="w-5 h-5 text-red-600 mr-3" />
+          <span className="text-red-700 text-sm">{errorMessage}</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         {/* Left Sidebar - Profile Card */}
         <div className="lg:col-span-1">
           <div className={`rounded-3xl p-8 shadow-sm border-4 transition-colors duration-300 ${
             darkMode ? 'bg-gray-800 border-blue-600' : 'bg-white border-blue-600'
-          }`} style={{ borderColor: '#1d4ed8' }}>
+          }`}>
             {/* Profile Picture */}
             <div className="text-center mb-8">
               <div className="relative inline-block">
                 <div className="w-32 h-32 mx-auto mb-6 relative">
                   <img
-                    src={user.avatar || 'https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&dpr=2'}
+                    src={editedUser.avatar || user.avatar}
                     alt={`${user.firstName} ${user.lastName}`}
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-cover border-4 border-white shadow-lg"
                   />
                   {isEditing && (
-                    <button className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg border-4 border-white">
+                    <label className="absolute -bottom-2 -right-2 w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center hover:bg-blue-700 transition-colors shadow-lg border-4 border-white cursor-pointer">
                       <Camera className="w-4 h-4 text-white" />
-                    </button>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                    </label>
                   )}
                 </div>
               </div>
@@ -58,18 +109,68 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <h2 className={`text-2xl font-bold transition-colors duration-300 ${
                   darkMode ? 'text-white' : 'text-gray-900'
                 }`}>
-                  {user.firstName} {user.lastName}
+                  {editedUser.firstName || user.firstName} {editedUser.lastName || user.lastName}
                 </h2>
                 <p className={`text-lg transition-colors duration-300 ${
                   darkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>@{user.username}</p>
                 {user.academicInfo.major && (
-                  <p className={`text-base transition-colors duration-300 ${
+                  <div className="flex items-center justify-center space-x-2">
+                    <GraduationCap className="w-4 h-4 text-blue-600" />
+                    <p className={`text-base transition-colors duration-300 ${
+                      darkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      {user.academicInfo.major} • {user.academicInfo.year}
+                    </p>
+                  </div>
+                )}
+                {user.academicInfo.gpa && (
+                  <div className="flex items-center justify-center space-x-2">
+                    <BookOpen className="w-4 h-4 text-green-600" />
+                    <p className={`text-sm transition-colors duration-300 ${
+                      darkMode ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
+                      GPA: {user.academicInfo.gpa}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Quick Stats */}
+            <div className="space-y-4">
+              <div className={`p-4 rounded-xl transition-colors duration-300 ${
+                darkMode ? 'bg-gray-700' : 'bg-gray-50'
+              }`}>
+                <div className="text-center">
+                  <div className={`text-2xl font-bold transition-colors duration-300 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {Math.floor(Math.random() * 50) + 10}
+                  </div>
+                  <div className={`text-sm transition-colors duration-300 ${
                     darkMode ? 'text-gray-400' : 'text-gray-600'
                   }`}>
-                    {user.academicInfo.major} • {user.academicInfo.year}
-                  </p>
-                )}
+                    Courses Completed
+                  </div>
+                </div>
+              </div>
+              
+              <div className={`p-4 rounded-xl transition-colors duration-300 ${
+                darkMode ? 'bg-gray-700' : 'bg-gray-50'
+              }`}>
+                <div className="text-center">
+                  <div className={`text-2xl font-bold transition-colors duration-300 ${
+                    darkMode ? 'text-white' : 'text-gray-900'
+                  }`}>
+                    {Math.floor(Math.random() * 30) + 5}
+                  </div>
+                  <div className={`text-sm transition-colors duration-300 ${
+                    darkMode ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
+                    Study Streak (days)
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -79,7 +180,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
         <div className="lg:col-span-3">
           <div className={`rounded-3xl p-8 shadow-sm border-4 transition-colors duration-300 ${
             darkMode ? 'bg-gray-800 border-blue-600' : 'bg-white border-blue-600'
-          }`} style={{ borderColor: '#1d4ed8' }}>
+          }`}>
             <div className="flex items-center justify-between mb-8">
               <h3 className={`text-2xl font-bold transition-colors duration-300 ${
                 darkMode ? 'text-white' : 'text-gray-900'
@@ -88,22 +189,27 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={handleCancel}
+                    disabled={saveStatus === 'saving'}
                     className={`px-4 py-2 rounded-2xl transition-colors flex items-center ${
                       darkMode 
                         ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    } disabled:opacity-50`}
                   >
                     <X className="w-4 h-4 mr-2" />
                     Cancel
                   </button>
                   <button
                     onClick={handleSave}
-                    disabled={isLoading}
+                    disabled={saveStatus === 'saving'}
                     className="px-6 py-2 bg-blue-600 text-white rounded-2xl hover:bg-blue-700 disabled:opacity-50 transition-colors flex items-center shadow-lg"
                   >
-                    <Save className="w-4 h-4 mr-2" />
-                    Save Changes
+                    {saveStatus === 'saving' ? (
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                    ) : (
+                      <Save className="w-4 h-4 mr-2" />
+                    )}
+                    {saveStatus === 'saving' ? 'Saving...' : 'Save Changes'}
                   </button>
                 </div>
               ) : (
@@ -187,24 +293,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                   <Mail className={`absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 transition-colors duration-300 ${
                     darkMode ? 'text-gray-400' : 'text-gray-400'
                   }`} />
-                  {isEditing ? (
-                    <input
-                      type="email"
-                      value={editedUser.email || ''}
-                      onChange={(e) => setEditedUser({ ...editedUser, email: e.target.value })}
-                      className={`w-full pl-12 pr-4 py-3 rounded-2xl focus:ring-2 focus:ring-blue-400 focus:outline-none transition-colors duration-300 ${
-                        darkMode 
-                          ? 'bg-gray-700 border border-gray-600 text-white' 
-                          : 'bg-white border border-gray-200 text-gray-900'
-                      }`}
-                    />
-                  ) : (
-                    <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
-                      darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
-                    }`}>
-                      {user.email}
-                    </div>
-                  )}
+                  <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
+                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
+                  }`}>
+                    {user.email}
+                  </div>
                 </div>
               </div>
 
@@ -235,7 +328,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.phone || '+1 (555) 123-4567'}
+                      {user.phone}
                     </div>
                   )}
                 </div>
@@ -268,7 +361,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.location || 'San Francisco, CA'}
+                      {user.location}
                     </div>
                   )}
                 </div>
@@ -300,7 +393,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.dateOfBirth ? user.dateOfBirth.toLocaleDateString() : '15/5/2000'}
+                      {user.dateOfBirth ? user.dateOfBirth.toLocaleDateString() : 'Not set'}
                     </div>
                   )}
                 </div>
@@ -330,9 +423,70 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <div className={`px-4 py-4 rounded-2xl min-h-[100px] transition-colors duration-300 ${
                   darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                 }`}>
-                  {user.bio || 'Computer Science student passionate about AI and machine learning.'}
+                  {user.bio}
                 </div>
               )}
+            </div>
+
+            {/* Academic Information */}
+            <div className="mt-8">
+              <h4 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
+                darkMode ? 'text-white' : 'text-gray-900'
+              }`}>Academic Information</h4>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Student ID
+                  </label>
+                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
+                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
+                  }`}>
+                    {user.academicInfo.studentId}
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Major
+                  </label>
+                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
+                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
+                  }`}>
+                    {user.academicInfo.major}
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Academic Year
+                  </label>
+                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
+                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
+                  }`}>
+                    {user.academicInfo.year}
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
+                    darkMode ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    GPA
+                  </label>
+                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
+                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
+                  }`}>
+                    {user.academicInfo.gpa}
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

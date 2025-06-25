@@ -9,6 +9,39 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey)
 
+// Database types
+export interface UserProfile {
+  id: string;
+  username: string;
+  first_name: string;
+  last_name: string;
+  bio?: string;
+  date_of_birth?: string;
+  phone?: string;
+  location?: string;
+  avatar_url?: string;
+  academic_info?: {
+    studentId?: string;
+    major?: string;
+    year?: string;
+    gpa?: number;
+    enrolledSubjects?: string[];
+  };
+  preferences?: {
+    notifications?: {
+      email?: boolean;
+      push?: boolean;
+      assignments?: boolean;
+      grades?: boolean;
+      announcements?: boolean;
+    };
+    theme?: string;
+    language?: string;
+  };
+  created_at: string;
+  updated_at: string;
+}
+
 // Auth helper functions
 export const signUp = async (email: string, password: string, userData: any) => {
   const { data, error } = await supabase.auth.signUp({
@@ -43,5 +76,37 @@ export const updateUserProfile = async (updates: any) => {
   const { data, error } = await supabase.auth.updateUser({
     data: updates
   })
+  return { data, error }
+}
+
+// Profile helper functions
+export const getUserProfile = async (userId: string): Promise<{ data: UserProfile | null, error: any }> => {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .single()
+  
+  return { data, error }
+}
+
+export const updateUserProfileData = async (userId: string, updates: Partial<UserProfile>) => {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .update(updates)
+    .eq('id', userId)
+    .select()
+    .single()
+  
+  return { data, error }
+}
+
+export const createUserProfile = async (profile: Partial<UserProfile>) => {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .insert(profile)
+    .select()
+    .single()
+  
   return { data, error }
 }

@@ -1,6 +1,16 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { AuthUser, AuthState, LoginCredentials, RegisterData } from '../types/auth';
-import { supabase, signUp, signIn, signOut, getCurrentUser, updateUserProfile } from '../lib/supabase';
+import { 
+  supabase, 
+  signUp, 
+  signIn, 
+  signOut, 
+  getCurrentUser, 
+  updateUserProfile,
+  getUserProfile,
+  updateUserProfileData,
+  UserProfile
+} from '../lib/supabase';
 import type { User } from '@supabase/supabase-js';
 
 interface AuthContextType extends AuthState {
@@ -68,41 +78,41 @@ const initialState: AuthState = {
   error: null,
 };
 
-// Convert Supabase user to AuthUser
-const convertSupabaseUser = (user: User): AuthUser => {
+// Convert Supabase user and profile to AuthUser
+const convertToAuthUser = (user: User, profile?: UserProfile | null): AuthUser => {
   const metadata = user.user_metadata || {};
   
   return {
     id: user.id,
     email: user.email || '',
-    username: metadata.username || user.email?.split('@')[0] || '',
-    firstName: metadata.firstName || metadata.first_name || '',
-    lastName: metadata.lastName || metadata.last_name || '',
-    avatar: metadata.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
-    bio: metadata.bio || '',
-    dateOfBirth: metadata.dateOfBirth ? new Date(metadata.dateOfBirth) : undefined,
-    phone: metadata.phone || '',
-    location: metadata.location || '',
+    username: profile?.username || metadata.username || user.email?.split('@')[0] || '',
+    firstName: profile?.first_name || metadata.firstName || metadata.first_name || '',
+    lastName: profile?.last_name || metadata.lastName || metadata.last_name || '',
+    avatar: profile?.avatar_url || metadata.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.email}`,
+    bio: profile?.bio || metadata.bio || 'Passionate learner exploring new subjects and expanding knowledge through AI-powered education.',
+    dateOfBirth: profile?.date_of_birth ? new Date(profile.date_of_birth) : metadata.dateOfBirth ? new Date(metadata.dateOfBirth) : new Date('1995-06-15'),
+    phone: profile?.phone || metadata.phone || '+1 (555) 123-4567',
+    location: profile?.location || metadata.location || 'San Francisco, CA',
     joinDate: new Date(user.created_at),
     lastLogin: new Date(),
     isEmailVerified: user.email_confirmed_at !== null,
     preferences: {
       notifications: {
-        email: metadata.notifications?.email ?? true,
-        push: metadata.notifications?.push ?? true,
-        assignments: metadata.notifications?.assignments ?? true,
-        grades: metadata.notifications?.grades ?? true,
-        announcements: metadata.notifications?.announcements ?? false,
+        email: profile?.preferences?.notifications?.email ?? metadata.notifications?.email ?? true,
+        push: profile?.preferences?.notifications?.push ?? metadata.notifications?.push ?? true,
+        assignments: profile?.preferences?.notifications?.assignments ?? metadata.notifications?.assignments ?? true,
+        grades: profile?.preferences?.notifications?.grades ?? metadata.notifications?.grades ?? true,
+        announcements: profile?.preferences?.notifications?.announcements ?? metadata.notifications?.announcements ?? false,
       },
-      theme: metadata.theme || 'light',
-      language: metadata.language || 'en',
+      theme: profile?.preferences?.theme || metadata.theme || 'light',
+      language: profile?.preferences?.language || metadata.language || 'en',
     },
     academicInfo: {
-      studentId: metadata.studentId || '',
-      major: metadata.major || '',
-      year: metadata.year || '',
-      gpa: metadata.gpa || 0,
-      enrolledSubjects: metadata.enrolledSubjects || [],
+      studentId: profile?.academic_info?.studentId || metadata.studentId || 'CS2024001',
+      major: profile?.academic_info?.major || metadata.major || 'Computer Science',
+      year: profile?.academic_info?.year || metadata.year || 'Junior',
+      gpa: profile?.academic_info?.gpa || metadata.gpa || 3.8,
+      enrolledSubjects: profile?.academic_info?.enrolledSubjects || metadata.enrolledSubjects || [],
     },
   };
 };
@@ -116,7 +126,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         const { user } = await getCurrentUser();
         if (user) {
-          const authUser = convertSupabaseUser(user);
+          // Get user profile from database
+          const { data: profile } = await getUserProfile(user.id);
+          const authUser = convertToAuthUser(user, profile);
           dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
         } else {
           dispatch({ type: 'SET_LOADING', payload: false });
@@ -133,7 +145,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         if (event === 'SIGNED_IN' && session?.user) {
-          const authUser = convertSupabaseUser(session.user);
+          // Get user profile from database
+          const { data: profile } = await getUserProfile(session.user.id);
+          const authUser = convertToAuthUser(session.user, profile);
           dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
         } else if (event === 'SIGNED_OUT') {
           dispatch({ type: 'LOGOUT' });
@@ -155,7 +169,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (data.user) {
-        const authUser = convertSupabaseUser(data.user);
+        // Get user profile from database
+        const { data: profile } = await getUserProfile(data.user.id);
+        const authUser = convertToAuthUser(data.user, profile);
         dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
       }
     } catch (error) {
@@ -180,8 +196,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
       
       if (authData.user) {
-        const authUser = convertSupabaseUser(authData.user);
-        dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+        // The profile will be created automatically by the trigger
+        // Get the profile after a short delay to ensure it's created
+        setTimeout(async () => {
+          const { data: profile } = await getUserProfile(authData.user!.id);
+          const authUser = convertToAuthUser(authData.user!, profile);
+          dispatch({ type: 'LOGIN_SUCCESS', payload: authUser });
+        }, 1000);
       }
     } catch (error) {
       dispatch({ type: 'LOGIN_FAILURE', payload: (error as Error).message });
@@ -203,15 +224,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     dispatch({ type: 'SET_LOADING', payload: true });
     
     try {
-      const { error } = await updateUserProfile(updates);
+      // Prepare profile updates for database
+      const profileUpdates: Partial<UserProfile> = {
+        first_name: updates.firstName,
+        last_name: updates.lastName,
+        bio: updates.bio,
+        date_of_birth: updates.dateOfBirth?.toISOString().split('T')[0],
+        phone: updates.phone,
+        location: updates.location,
+        avatar_url: updates.avatar,
+        academic_info: updates.academicInfo,
+        preferences: updates.preferences,
+      };
+
+      // Remove undefined values
+      Object.keys(profileUpdates).forEach(key => {
+        if (profileUpdates[key as keyof UserProfile] === undefined) {
+          delete profileUpdates[key as keyof UserProfile];
+        }
+      });
+
+      // Update profile in database
+      const { error: profileError } = await updateUserProfileData(state.user.id, profileUpdates);
       
-      if (error) {
-        throw new Error(error.message);
+      if (profileError) {
+        throw new Error(profileError.message);
+      }
+
+      // Also update auth metadata for some fields
+      const authUpdates: any = {};
+      if (updates.firstName) authUpdates.firstName = updates.firstName;
+      if (updates.lastName) authUpdates.lastName = updates.lastName;
+      if (updates.avatar) authUpdates.avatar = updates.avatar;
+
+      if (Object.keys(authUpdates).length > 0) {
+        const { error: authError } = await updateUserProfile(authUpdates);
+        if (authError) {
+          console.warn('Failed to update auth metadata:', authError.message);
+        }
       }
       
       dispatch({ type: 'UPDATE_PROFILE', payload: updates });
     } catch (error) {
       console.error('Failed to update profile:', error);
+      throw error;
     } finally {
       dispatch({ type: 'SET_LOADING', payload: false });
     }
