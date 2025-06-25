@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { 
   User, Mail, Phone, MapPin, Calendar, Edit3, Save, X, 
-  Camera, AlertCircle, CheckCircle, GraduationCap, BookOpen
+  Camera, AlertCircle, CheckCircle
 } from 'lucide-react';
 import { useAuth } from '../../contexts/AuthContext';
 import { AuthUser } from '../../types/auth';
@@ -114,63 +114,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <p className={`text-lg transition-colors duration-300 ${
                   darkMode ? 'text-gray-400' : 'text-gray-500'
                 }`}>@{user.username}</p>
-                {user.academicInfo.major && (
-                  <div className="flex items-center justify-center space-x-2">
-                    <GraduationCap className="w-4 h-4 text-blue-600" />
-                    <p className={`text-base transition-colors duration-300 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      {user.academicInfo.major} • {user.academicInfo.year}
-                    </p>
-                  </div>
-                )}
-                {user.academicInfo.gpa && (
-                  <div className="flex items-center justify-center space-x-2">
-                    <BookOpen className="w-4 h-4 text-green-600" />
-                    <p className={`text-sm transition-colors duration-300 ${
-                      darkMode ? 'text-gray-400' : 'text-gray-600'
-                    }`}>
-                      GPA: {user.academicInfo.gpa}
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Quick Stats */}
-            <div className="space-y-4">
-              <div className={`p-4 rounded-xl transition-colors duration-300 ${
-                darkMode ? 'bg-gray-700' : 'bg-gray-50'
-              }`}>
-                <div className="text-center">
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {Math.floor(Math.random() * 50) + 10}
-                  </div>
-                  <div className={`text-sm transition-colors duration-300 ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Courses Completed
-                  </div>
-                </div>
-              </div>
-              
-              <div className={`p-4 rounded-xl transition-colors duration-300 ${
-                darkMode ? 'bg-gray-700' : 'bg-gray-50'
-              }`}>
-                <div className="text-center">
-                  <div className={`text-2xl font-bold transition-colors duration-300 ${
-                    darkMode ? 'text-white' : 'text-gray-900'
-                  }`}>
-                    {Math.floor(Math.random() * 30) + 5}
-                  </div>
-                  <div className={`text-sm transition-colors duration-300 ${
-                    darkMode ? 'text-gray-400' : 'text-gray-600'
-                  }`}>
-                    Study Streak (days)
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -426,67 +369,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                   {user.bio}
                 </div>
               )}
-            </div>
-
-            {/* Academic Information */}
-            <div className="mt-8">
-              <h4 className={`text-lg font-semibold mb-4 transition-colors duration-300 ${
-                darkMode ? 'text-white' : 'text-gray-900'
-              }`}>Academic Information</h4>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Student ID
-                  </label>
-                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
-                  }`}>
-                    {user.academicInfo.studentId}
-                  </div>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Major
-                  </label>
-                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
-                  }`}>
-                    {user.academicInfo.major}
-                  </div>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    Academic Year
-                  </label>
-                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
-                  }`}>
-                    {user.academicInfo.year}
-                  </div>
-                </div>
-
-                <div>
-                  <label className={`block text-sm font-medium mb-3 transition-colors duration-300 ${
-                    darkMode ? 'text-gray-300' : 'text-gray-700'
-                  }`}>
-                    GPA
-                  </label>
-                  <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
-                    darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
-                  }`}>
-                    {user.academicInfo.gpa}
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
