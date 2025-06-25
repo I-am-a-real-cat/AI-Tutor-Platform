@@ -193,7 +193,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                   <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
                     darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                   }`}>
-                    {user.firstName}
+                    {user.firstName || ''}
                   </div>
                 )}
               </div>
@@ -220,7 +220,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                   <div className={`px-4 py-3 rounded-2xl transition-colors duration-300 ${
                     darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                   }`}>
-                    {user.lastName}
+                    {user.lastName || ''}
                   </div>
                 )}
               </div>
@@ -271,7 +271,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.phone}
+                      {user.phone || ''}
                     </div>
                   )}
                 </div>
@@ -304,7 +304,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.location}
+                      {user.location || ''}
                     </div>
                   )}
                 </div>
@@ -325,7 +325,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <input
                       type="date"
                       value={editedUser.dateOfBirth ? editedUser.dateOfBirth.toISOString().split('T')[0] : ''}
-                      onChange={(e) => setEditedUser({ ...editedUser, dateOfBirth: new Date(e.target.value) })}
+                      onChange={(e) => setEditedUser({ ...editedUser, dateOfBirth: e.target.value ? new Date(e.target.value) : undefined })}
                       className={`w-full pl-12 pr-4 py-3 rounded-2xl focus:ring-2 focus:ring-blue-400 focus:outline-none transition-colors duration-300 ${
                         darkMode 
                           ? 'bg-gray-700 border border-gray-600 text-white' 
@@ -336,7 +336,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                     <div className={`pl-12 pr-4 py-3 rounded-2xl transition-colors duration-300 ${
                       darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                     }`}>
-                      {user.dateOfBirth ? user.dateOfBirth.toLocaleDateString() : 'Not set'}
+                      {user.dateOfBirth ? user.dateOfBirth.toLocaleDateString() : ''}
                     </div>
                   )}
                 </div>
@@ -366,7 +366,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onBack, darkMode }) =>
                 <div className={`px-4 py-4 rounded-2xl min-h-[100px] transition-colors duration-300 ${
                   darkMode ? 'bg-gray-700 text-white' : 'bg-gray-50 text-gray-900'
                 }`}>
-                  {user.bio}
+                  {user.bio || ''}
                 </div>
               )}
             </div>
